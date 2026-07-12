@@ -8,12 +8,16 @@ import 'package:provider/provider.dart';
 class AddLinkSheet extends StatefulWidget {
   final LinkModel? linkToEdit;
   final bool isEditing;
+  final bool isShared;
+
   final CategoryModel initialCategory;
+
   const AddLinkSheet({
     super.key,
     required this.initialCategory,
     this.linkToEdit,
     this.isEditing = false,
+    this.isShared = false,
   });
 
   static void show(
@@ -21,6 +25,7 @@ class AddLinkSheet extends StatefulWidget {
     CategoryModel initialCategory, {
     LinkModel? linkToEdit,
     bool isEditing = false,
+    bool isShared = false,
   }) {
     showModalBottomSheet(
       context: context,
@@ -30,6 +35,7 @@ class AddLinkSheet extends StatefulWidget {
         initialCategory: initialCategory,
         linkToEdit: linkToEdit,
         isEditing: isEditing,
+        isShared: isShared,
       ),
     );
   }
@@ -82,7 +88,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
         status: status,
       );
 
-      if (widget.isEditing) {
+      if (widget.isEditing && !widget.isShared) {
         await linkProvider.update(newLink);
       } else {
         await linkProvider.add(newLink);

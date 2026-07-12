@@ -38,15 +38,12 @@ class _AppState extends State<App> {
   late StreamSubscription _intentSub;
 
   void _logSharedFlow(String message) {
-    debugPrint('[receive_sharing_intent] $message');
+    debugPrint('📱 [receive_sharing_intent] $message');
   }
-
-  
 
   @override
   void initState() {
     super.initState();
-
 
     _logSharedFlow('Inicializando listeners de compartido');
 
@@ -54,7 +51,9 @@ class _AppState extends State<App> {
     _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
       (value) {
         _logSharedFlow('getMediaStream recibió ${value.length} archivo(s)');
-        _handleShared(value);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleShared(value);
+        });
       },
       onError: (err) {
         _logSharedFlow('getMediaStream error: $err');
@@ -62,20 +61,30 @@ class _AppState extends State<App> {
     );
 
     // App cerrada (cold start), se abre desde el share sheet
-    ReceiveSharingIntent.instance.getInitialMedia().then((value) {
-      _logSharedFlow('getInitialMedia recibió ${value.length} archivo(s)');
-      _handleShared(value);
-      ReceiveSharingIntent.instance.reset();
-      _logSharedFlow('reset ejecutado tras getInitialMedia');
-    }).catchError((err) {
-      _logSharedFlow('getInitialMedia error: $err');
-    });
+    ReceiveSharingIntent.instance
+        .getInitialMedia()
+        .then((value) {
+          _logSharedFlow('getInitialMedia recibió ${value.length} archivo(s)');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _handleShared(value);
+          });
+          ReceiveSharingIntent.instance.reset();
+          _logSharedFlow('reset ejecutado tras getInitialMedia');
+        })
+        .catchError((err) {
+          _logSharedFlow('getInitialMedia error: $err');
+        });
   }
 
-  void _handleShared(List<SharedMediaFile> files) {
+  void _handleShared(List<SharedMediaFile> files) async {
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
       context,
+      listen: false,
     );
+
+    if (categoryProvider.categories.isEmpty) {
+      await categoryProvider.loadAll();
+    }
 
     _logSharedFlow('Procesando ${files.length} archivo(s) compartido(s)');
 
@@ -86,7 +95,9 @@ class _AppState extends State<App> {
         .map((f) => f.path)
         .join();
 
-    _logSharedFlow('Contenido de texto detectado: ${text.isEmpty ? "vacío" : text}');
+    _logSharedFlow(
+      'Contenido de texto detectado: ${text.isEmpty ? "vacío" : text}',
+    );
 
     if (text.isEmpty) return;
 
@@ -97,24 +108,32 @@ class _AppState extends State<App> {
 
     final ctx = navigatorKey.currentContext;
     if (ctx == null) {
-      _logSharedFlow('navigatorKey.currentContext es null; no se puede abrir AddLinkSheet');
+      _logSharedFlow(
+        'navigatorKey.currentContext es null; no se puede abrir AddLinkSheet',
+      );
       return;
     }
 
-    final LinkModel linkToAdd = LinkModel(
+    final defaultCategory = categoryProvider.categories.firstWhere(
+      (c) => c.id == DatabaseHelper.defaultCategoryId,
+      orElse: () => categoryProvider.categories.first,
+    );
+
+    final linkToAdd = LinkModel(
       id: null,
-      title: "",
+      title: 'Hola',
       url: url,
-      categoryId: categoryProvider.categories.first.id!,
+      categoryId: defaultCategory.id!,
     );
 
-    _logSharedFlow('Abriendo AddLinkSheet para la categoría ${categoryProvider.categories.first.id}');
-
-    AddLinkSheet.show(
-      ctx,
-      categoryProvider.categories.first,
-      linkToEdit: linkToAdd,
+    _logSharedFlow(
+      'Abriendo AddLinkSheet para la categoría ${defaultCategory.id}',
     );
+
+
+    if (context.mounted) {
+      AddLinkSheet.show(ctx, defaultCategory, linkToEdit: linkToAdd, isEditing: true, isShared: true);
+    }
   }
 
   @override
@@ -130,9 +149,9 @@ class _AppState extends State<App> {
       context,
     );
     final CategoryModel initialCategory = categoryProvider.categories.first;
-    
 
     return MaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Link Chest',
       theme: AppTheme.light,
@@ -142,4 +161,3 @@ class _AppState extends State<App> {
     );
   }
 }
-
