@@ -43,19 +43,23 @@ class LocalAuthService {
       return await _auth.authenticate(
         localizedReason: reason,
         biometricOnly: biometricOnly,
-        
+
         authMessages: const [
           AndroidAuthMessages(
             signInTitle: 'Autenticación requerida',
-            cancelButton: 'Cancelar', 
+            cancelButton: 'Cancelar',
           ),
         ],
       );
     } on PlatformException catch (e) {
       // e.code puede ser: notAvailable, notEnrolled, lockedOut, permanentlyLockedOut
-      throw Exception('Error de autenticación [${e.code}]: ${e.message}');
+      if (e.code == "userCanceled") {
+        return false;
+      } else {
+        throw Exception('Error de autenticación [${e.code}]: ${e.message}');
+      }
     } catch (e) {
-      throw Exception('Error inesperado: $e');
+      return false;
     }
   }
 

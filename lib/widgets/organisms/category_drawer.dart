@@ -1,5 +1,6 @@
 import 'package:custom_clippers/custom_clippers.dart';
 import 'package:flutter/material.dart';
+import 'package:link_chest/widgets/molecules/button_about_dialog.dart';
 import 'package:link_chest/widgets/molecules/category_items_group.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
 
@@ -19,8 +20,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
           header(),
           addCategoryButton(),
           Expanded(child: CategoryItemsGroup()),
-          Divider(),
-          ListTile(title: Text("Footer")),
+          ButtonAboutDialog()
         ],
       ),
     );

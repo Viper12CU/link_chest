@@ -36,7 +36,7 @@ class CategoryPage extends StatelessWidget {
         backgroundColor: categoryColor ,
       ),
       drawer: CategoryDrawer(),
-      body: CategoryTemplate(categoryId: category.id,),
+      body: CategoryTemplate(category: category,),
       floatingActionButton: addButton(context, categoryColor),
     );
 

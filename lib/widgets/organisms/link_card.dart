@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
+import 'package:link_chest/widgets/atoms/category_badge.dart';
 import 'package:provider/provider.dart';
 
 import '../molecules/link_card_menu.dart';
@@ -17,6 +18,7 @@ class LinkCard extends StatefulWidget {
   final VoidCallback? onLock;
   final VoidCallback? onDelete;
   final ValueChanged<int?>? onMoveTo;
+  final VoidCallback? onEdit;
 
   const LinkCard({
     super.key,
@@ -31,6 +33,8 @@ class LinkCard extends StatefulWidget {
     this.onLock,
     this.onDelete,
     this.onMoveTo,
+    this.onEdit
+
   });
 
   @override
@@ -87,6 +91,7 @@ class _LinkCardState extends State<LinkCard> {
                   onLock: widget.onLock,
                   onDelete: widget.onDelete,
                   onMoveTo: widget.onMoveTo,
+                  onEdit: widget.onEdit,
                 ),
               ],
             ),
@@ -129,7 +134,7 @@ class _LinkCardState extends State<LinkCard> {
                 ),
                 const SizedBox(width: 10),
                 if (widget.isLocked)
-                _CategoryBadge(category: category)
+                CategoryBadge(category: category)
               ],
             ),
           ],
@@ -139,27 +144,3 @@ class _LinkCardState extends State<LinkCard> {
   }
 }
 
-// ── Category badge ──────────────────────────────────────────
-class _CategoryBadge extends StatelessWidget {
-  final CategoryModel category;
-  const _CategoryBadge({required this.category});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.redAccent,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        category.title,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-}

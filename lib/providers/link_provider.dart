@@ -19,7 +19,7 @@ class LinkProvider extends ChangeNotifier {
       _links.where((l) => l.status == LinkStatus.private).toList();
 
   List<LinkModel> byCategory(int categoryId) =>
-      _links.where((l) => l.categoryId == categoryId).toList();
+      _links.where((l) => l.categoryId == categoryId && l.status == LinkStatus.public).toList();
 
   Future<void> loadAll() async {
     _isLoading = true;
@@ -105,3 +105,4 @@ class LinkProvider extends ChangeNotifier {
     await update(updated);
   }
 }
+

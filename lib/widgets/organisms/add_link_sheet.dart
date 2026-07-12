@@ -2,18 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
+import 'package:link_chest/widgets/atoms/visibility_switch.dart';
 import 'package:provider/provider.dart';
 
 class AddLinkSheet extends StatefulWidget {
+  final LinkModel? linkToEdit;
+  final bool isEditing;
   final CategoryModel initialCategory;
-  const AddLinkSheet({super.key, required this.initialCategory});
+  const AddLinkSheet({
+    super.key,
+    required this.initialCategory,
+    this.linkToEdit,
+    this.isEditing = false,
+  });
 
-  static void show(BuildContext context, CategoryModel initialCategory) {
+  static void show(
+    BuildContext context,
+    CategoryModel initialCategory, {
+    LinkModel? linkToEdit,
+    bool isEditing = false,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => AddLinkSheet(initialCategory: initialCategory),
+      builder: (_) => AddLinkSheet(
+        initialCategory: initialCategory,
+        linkToEdit: linkToEdit,
+        isEditing: isEditing,
+      ),
     );
   }
 
@@ -23,9 +40,24 @@ class AddLinkSheet extends StatefulWidget {
 
 class _AddLinkSheetState extends State<AddLinkSheet> {
   LinkStatus status = LinkStatus.public;
+  int? _selectedCategoryId;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategoryId = widget.initialCategory.id;
+    if (widget.linkToEdit != null && widget.isEditing) {
+      setState(() {
+        status = widget.linkToEdit!.status;
+        _titleController.text = widget.linkToEdit!.title;
+        _descriptionController.text = widget.linkToEdit!.description ?? "";
+        _urlController.text = widget.linkToEdit!.url;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,20 +67,26 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
       context,
     );
     final List<CategoryModel> categorys = categoryProvider.categories;
-    CategoryModel selectedCategory = widget.initialCategory;
+    final CategoryModel selectedCategory = categorys.firstWhere(
+      (category) => category.id == _selectedCategoryId,
+      orElse: () => widget.initialCategory,
+    );
 
-    void handlerSubmit() {
-      final Map<String, dynamic> linkMap = {
-        'title': _titleController.text,
-        'description': _descriptionController.text,
-        'url': _urlController.text,
-        'category_id': selectedCategory.id,
-        'status': status.value,
-      };
+    void handlerSubmit() async {
+      final newLink = LinkModel(
+        id: widget.linkToEdit?.id,
+        title: _titleController.text,
+        description: _descriptionController.text,
+        url: _urlController.text,
+        categoryId: _selectedCategoryId ?? selectedCategory.id!,
+        status: status,
+      );
 
-      final newLink = LinkModel.fromMap(linkMap);
-
-      linkProvider.add(newLink);
+      if (widget.isEditing) {
+        await linkProvider.update(newLink);
+      } else {
+        await linkProvider.add(newLink);
+      }
     }
 
     return Padding(
@@ -109,18 +147,21 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
             // ── Category selector ───────────────────────────
             Text('Category', style: Theme.of(context).textTheme.labelSmall),
             const SizedBox(height: 6),
-            DropdownButtonFormField<CategoryModel>(
-              initialValue: selectedCategory,
+            DropdownButtonFormField<int>(
+              initialValue: _selectedCategoryId,
               hint: Text(widget.initialCategory.title),
               items: categorys
                   .map(
                     (e) => DropdownMenuItem(
-                      value: e,
-                      child: Row(spacing: 10,children: [Text(e.icon), Text(e.title)]),
+                      value: e.id,
+                      child: Row(
+                        spacing: 10,
+                        children: [Text(e.icon), Text(e.title)],
+                      ),
                     ),
                   )
                   .toList(),
-              onChanged: (item) => setState(() => selectedCategory = item!),
+              onChanged: (item) => setState(() => _selectedCategoryId = item),
             ),
 
             const SizedBox(height: 16),
@@ -128,7 +169,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
             // ── Visibility toggle ───────────────────────────
             Text('Visibility', style: Theme.of(context).textTheme.labelSmall),
             const SizedBox(height: 6),
-            _VisibilitySwitch(
+            VisibilitySwitch(
               status: status,
               onChanged: (v) => setState(() => status = v),
             ),
@@ -138,7 +179,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
             // ── Save button ─────────────────────────────────
             ElevatedButton(
               onPressed: () => {handlerSubmit(), Navigator.pop(context)},
-              child: const Text('Save Link'),
+              child: Text(widget.isEditing ? 'Guardar Cambios' : 'Agregar Link'),
             ),
           ],
         ),
@@ -148,113 +189,3 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
 }
 
 // ── Visibility switch ────────────────────────────────────────
-class _VisibilitySwitch extends StatelessWidget {
-  final LinkStatus status;
-  final ValueChanged<LinkStatus> onChanged;
-
-  const _VisibilitySwitch({required this.status, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final activeColor = status == LinkStatus.private
-        ? cs.tertiaryContainer
-        : cs.tertiary;
-
-    return GestureDetector(
-      onTap: () => onChanged(
-        status == LinkStatus.public ? LinkStatus.private : LinkStatus.public,
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.ease,
-        height: 48,
-        decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: cs.outline),
-        ),
-        child: Stack(
-          children: [
-            // ── Labels ──────────────────────────────────────
-            Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'Public',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: status == LinkStatus.public
-                            ? Colors.white
-                            : cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      'Private',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: status == LinkStatus.private
-                            ? Colors.white
-                            : cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Thumb ──────────────────────────────────────
-            AnimatedAlign(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.ease,
-              alignment: status == LinkStatus.private
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(3),
-                child: FractionallySizedBox(
-                  widthFactor: 0.5,
-                  child: Container(
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: activeColor,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          status == LinkStatus.private
-                              ? Icons.lock
-                              : Icons.lock_open,
-                          size: 12,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          status == LinkStatus.private ? 'Private' : 'Public',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

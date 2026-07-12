@@ -34,10 +34,7 @@ class ConfirmDialog extends StatelessWidget {
       title: Text(title),
       content: description != null ? Text(description!) : null,
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
-        ),
+        
         ...actions.map(
           (action) => switch (action.style) {
             ConfirmActionStyle.normal => TextButton(
@@ -47,29 +44,36 @@ class ConfirmDialog extends StatelessWidget {
                 },
                 child: Text(action.label),
               ),
-            ConfirmActionStyle.destructive => SizedBox(
-              width: 140,
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    action.onTap();
-                  },
-                  child: Text(action.label, style: const TextStyle(color: Colors.white)),
-                ),
+            ConfirmActionStyle.destructive => Column(
+              children: [
+                ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      action.onTap();
+                    },
+                    child: Text(action.label, style: const TextStyle(color: Colors.white)),
+                  ),
+                  SizedBox(height: 10,)
+              ],
             ),
-            ConfirmActionStyle.primary => SizedBox(
-              width: 140,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    action.onTap();
-                  },
-                  child: Text(action.label),
-                ),
-            ),
+            ConfirmActionStyle.primary => ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                onPressed: () {
+                  Navigator.pop(context);
+                  action.onTap();
+                },
+                child: Text(action.label),
+              ),
           },
+        ),
+
+        Align(
+
+          child: TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancelar', style: TextStyle(color: Colors.grey[500]),),
+          ),
         ),
       ],
     );

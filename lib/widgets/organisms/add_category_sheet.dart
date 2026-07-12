@@ -4,17 +4,31 @@ import 'package:flutter/foundation.dart' as foundation;
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
+import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:provider/provider.dart';
 
 class AddCategorySheet extends StatefulWidget {
-  const AddCategorySheet({super.key});
+  final CategoryModel? categroyToEdit;
+  final bool isEditing;
+  const AddCategorySheet({
+    super.key,
+    this.categroyToEdit,
+    this.isEditing = false,
+  });
 
-  static void show(BuildContext context) {
+  static void show(
+    BuildContext context, {
+    CategoryModel? categroyToEdit,
+    bool isEditing = false,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => const AddCategorySheet(),
+      builder: (_) => AddCategorySheet(
+        categroyToEdit: categroyToEdit,
+        isEditing: isEditing,
+      ),
     );
   }
 
@@ -45,6 +59,21 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.categroyToEdit != null && widget.isEditing) {
+      setState(() {
+        _titleController.text = widget.categroyToEdit!.title;
+        _selectedEmoji = widget.categroyToEdit!.icon;
+        _selectedColor = ColorParse().toColor(widget.categroyToEdit!.color);
+        _pickerColor = !_colors.contains(
+          ColorParse().toColor(widget.categroyToEdit!.color),
+        );
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
       context,
@@ -52,6 +81,16 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
 
     Widget colorPickerDialog() {
       return AlertDialog(
+        actionsAlignment: MainAxisAlignment.end,
+        actionsPadding: EdgeInsets.zero,
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.pop(context),
+            label: Text("Guardar"),
+            icon: Icon(Icons.save_as_rounded),
+          ),
+        ],
+        insetPadding: EdgeInsets.zero,
         scrollable: true,
         contentPadding: EdgeInsets.all(0),
         content: ColorPicker(
@@ -89,9 +128,8 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       BuildContext context,
     ) {
       final Color bgColor = Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest;
-
+        context,
+      ).colorScheme.surfaceContainerHighest;
 
       return EmojiPicker(
         textEditingController: _controller,
@@ -114,16 +152,13 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
                     : 1.0),
           ),
           skinToneConfig: const SkinToneConfig(),
-          categoryViewConfig: CategoryViewConfig(
-            backgroundColor: bgColor,
-          ),
+          categoryViewConfig: CategoryViewConfig(backgroundColor: bgColor),
           bottomActionBarConfig: BottomActionBarConfig(
             backgroundColor: bgColor,
             buttonColor: Colors.transparent,
             buttonIconColor: Theme.of(context).iconTheme.color!,
           ),
           searchViewConfig: const SearchViewConfig(),
-
         ),
       );
     }
@@ -134,12 +169,23 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       });
     }
 
-    void handlerSubmit() {
+    void handlerSubmit() async {
       final colorStr =
           '#${_selectedColor.toARGB32().toRadixString(16).padLeft(8, '0')}';
-      final category = CategoryModel(title: _titleController.text, icon: _selectedEmoji, color: colorStr);
+      final category = CategoryModel(
+        id: widget.categroyToEdit?.id,
+        title: _titleController.text,
+        icon: _selectedEmoji,
+        color: colorStr,
+      );
 
-      categoryProvider.add(category);
+      if (widget.isEditing) {
+        await categoryProvider.update(category);
+      } else {
+        await categoryProvider.add(category);
+      }
+
+      debugPrint("Error ${categoryProvider.error}");
     }
 
     return Padding(
@@ -170,49 +216,75 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
             // ── Emoji picker ────────────────────────────────
             Text('Icon', style: Theme.of(context).textTheme.labelSmall),
             const SizedBox(height: 8),
-            AnimatedContainer(
-              duration: Duration(milliseconds: 300),
-              width: 52,
-              height: _emojiShowing ? 320 : 52,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12.0),
-              alignment: Alignment.center,
-              child: Column(
-                spacing: 3.0,
-                children: [
-                  Row(
-                    spacing: 130,
-                    mainAxisAlignment: MainAxisAlignment.start,
+            Row(
+              spacing: 15.0,
+              children: [
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 300),
+                  width: _emojiShowing ? 348 : 54,
+                  height: _emojiShowing ? 320 : 52,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  alignment: Alignment.center,
+                  child: Column(
+                    spacing: 5.0,
                     children: [
-                      IconButton(
-                        icon: Icon(Icons.tag_faces_sharp),
-                        onPressed: () => setState(() {
-                          _emojiShowing = !_emojiShowing;
-                        }),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _emojiShowing = !_emojiShowing;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 7),
+                          child: Text(
+                            _selectedEmoji,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
                       ),
-                      Text(_selectedEmoji, style: const TextStyle(fontSize: 24)),
+                      if (_emojiShowing)
+                        FutureBuilder(
+                          future: Future.delayed(
+                            const Duration(milliseconds: 250),
+                          ),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.done) {
+                              return emojiPicker(handlerEmojiSelected, context);
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          },
+                        ),
                     ],
                   ),
-                  if (_emojiShowing) 
-                  FutureBuilder(future: Future.delayed(const Duration(milliseconds: 250)), builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      return emojiPicker(handlerEmojiSelected, context);
-                    } else {
-                      return const SizedBox.shrink();
-                    }
-                  }),
-                ],
-              ),
+                ),
+                if (!_emojiShowing)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Seleciona un símbolo",
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      Text(
+                        "El emoji representará esta categoría",
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ],
+                  ),
+              ],
             ),
             const SizedBox(height: 10),
-
-
 
             const SizedBox(height: 16),
 
@@ -312,7 +384,9 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.secondary,
               ),
-              child: const Text('Create Category'),
+              child: Text(
+                widget.isEditing ? 'Guardar Cambios' : 'Crear Categoría',
+              ),
             ),
           ],
         ),

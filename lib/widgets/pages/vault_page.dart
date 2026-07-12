@@ -1,3 +1,4 @@
+import 'package:draggable_home/draggable_home.dart';
 import 'package:flutter/material.dart';
 import 'package:link_chest/widgets/templates/vault_template.dart';
 
@@ -6,11 +7,15 @@ class VaultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Vault"),
+    return DraggableHome(
+      appBarColor: Colors.redAccent,
+      title: Text("Vault"),
+      headerWidget: Container(
+        color: Colors.redAccent,
+        child: Center(child: Text("Vault")),
       ),
-      body: VaultTemplate()
+      fullyStretchable: true,
+      body: [SizedBox(), SizedBox(child: VaultTemplate())],
     );
   }
 }

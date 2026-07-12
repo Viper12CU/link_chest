@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
+import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
-import 'package:link_chest/widgets/atoms/connfirm_dialog.dart';
+import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
+import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
 import 'package:link_chest/widgets/pages/category_page.dart';
 import 'package:provider/provider.dart';
 
@@ -25,21 +27,38 @@ class CategoryDrawerItem extends StatelessWidget {
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
       context,
     );
+    final LinkProvider linkProvider = Provider.of<LinkProvider>(context);
+    final List<LinkModel> links = linkProvider.byCategory(category.id!);
 
     void handleDeleteCategory(int? categoryId) {
       ConfirmDialog.show(
         context: context,
         title: '¿Eliminar categoría?',
-        description: 'Esta acción no se puede deshacer.',
+        description: 'Elimina esta categoría y sus links o reasignalos a la categoría por defecto.',
         actions: [
           ConfirmAction(
-            label: 'Eliminar',
+            label: 'Eliminar y Reasignar',
             style: ConfirmActionStyle.destructive,
-            onTap: () async =>
-                await categoryProvider.deleteWithLinks(categoryId!),
+            onTap: () async {
+               await categoryProvider.deleteAndReassign(categoryId!);
+               linkProvider.reassignToDefault(categoryId);
+            }
+               
+          ),
+          ConfirmAction(
+            label: 'Eliminar Completamente',
+            style: ConfirmActionStyle.destructive,
+            onTap: () async {
+                await categoryProvider.deleteWithLinks(categoryId!);
+                linkProvider.removeByCategory(categoryId);}
           ),
         ],
       );
+    }
+
+
+    void handleEditCategory(CategoryModel category) {
+      AddCategorySheet.show(context, categroyToEdit: category, isEditing: true);
     }
 
     final List<SlidableAction> actions = [
@@ -49,9 +68,7 @@ class CategoryDrawerItem extends StatelessWidget {
         label: "delete",
       ),
       SlidableAction(
-        onPressed: (_) {
-          // Implement edit functionality here
-        },
+        onPressed: (_) => handleEditCategory(category),
         icon: Icons.edit,
         label: "edit",
       ),
@@ -80,13 +97,19 @@ class CategoryDrawerItem extends StatelessWidget {
                   ),
                 ],
               ),
-              Container(
-                decoration: BoxDecoration(
-                  color: ColorParse().toColor(category.color),
-                  shape: BoxShape.circle,
-                ),
-                height: 15,
-                width: 15,
+              Row(
+                spacing: 12,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: ColorParse().toColor(category.color),
+                      shape: BoxShape.circle,
+                    ),
+                    height: 15,
+                    width: 15,
+                  ),
+                  Text(links.length.toString())
+                ],
               ),
             ],
           ),

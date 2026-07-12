@@ -3,7 +3,7 @@ import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 
-enum MenuAction { copy, share, lock, move, delete }
+enum MenuAction { copy, share, lock, move, delete, edit }
 
 class CardMenu extends StatelessWidget {
   final bool isLocked;
@@ -12,6 +12,7 @@ class CardMenu extends StatelessWidget {
   final VoidCallback? onLock;
   final VoidCallback? onDelete;
   final ValueChanged<int?>? onMoveTo;
+  final VoidCallback? onEdit;
 
   const CardMenu({
     super.key,
@@ -21,6 +22,7 @@ class CardMenu extends StatelessWidget {
     this.onLock,
     this.onDelete,
     this.onMoveTo,
+    this.onEdit,
   });
 
   @override
@@ -50,7 +52,7 @@ class CardMenu extends StatelessWidget {
             children: [
               Icon(
                 Icons.folder_open_rounded,
-                size: 15,
+                size: 20,
                 color: cs.onSurfaceVariant,
               ),
               const SizedBox(width: 10),
@@ -66,10 +68,17 @@ class CardMenu extends StatelessWidget {
 
         // ── Bloquear / Desbloquear ──────────────────────
         _buildItem(
-          icon: isLocked ? Icons.lock_open_rounded : Icons.lock_rounded,
+          icon: isLocked ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
           label: isLocked ? 'Desbloquear' : 'Bloquear',
           action: MenuAction.lock,
         ),
+
+        // ── Editar ──────────────────────
+        _buildItem(
+          icon: Icons.edit_outlined, 
+          label: 'Editar', 
+          action: MenuAction.edit
+          ),
 
         // ── Divider + Eliminar ──────────────────────────
         const PopupMenuDivider(height: 6),
@@ -102,7 +111,7 @@ class CardMenu extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 15,
+            size: 20,
             color: isDanger ? const Color(0xFFFF5A5F) : null,
           ),
           const SizedBox(width: 10),
@@ -131,14 +140,18 @@ class CardMenu extends StatelessWidget {
         onDelete?.call();
       case MenuAction.move:
         _showMoveSubmenu(context);
+      case MenuAction.edit:
+        onEdit?.call();
     }
   }
 
   void _showMoveSubmenu(BuildContext context) {
-    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
+      context,
+      listen: false,
+    );
 
     final List<CategoryModel> availableCategories = categoryProvider.categories;
-
 
     showModalBottomSheet(
       context: context,
@@ -167,11 +180,7 @@ class CardMenu extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   alignment: Alignment.center,
-                  child: Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(shape: BoxShape.circle),
-                  ),
+                  child: Text(cat.icon, style: TextStyle(fontSize: 18.0)),
                 ),
                 title: Text(cat.title),
                 onTap: () {
