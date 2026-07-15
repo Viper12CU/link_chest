@@ -20,7 +20,7 @@ class BiometricAuthButton extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.transparent,
-            border: Border.all(color: Colors.redAccent, width: 2.0),
+            border: Border.all(color: const Color.fromARGB(255, 112, 112, 112), width: 2.0),
           ),
           child: const Center(
             child: Icon(Icons.fingerprint_rounded, size: 60.0),
