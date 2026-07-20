@@ -100,9 +100,9 @@ class _LinkCardState extends State<LinkCard> {
 
             // ── Description ──────────────────────────────
             Text(
-              widget.description!,
+              widget.description!.isNotEmpty ? widget.description! : 'Sin descripción',
               style: Theme.of(context).textTheme.bodyMedium,
-              maxLines: 2,
+              maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
 

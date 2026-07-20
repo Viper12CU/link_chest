@@ -83,7 +83,7 @@ class LinkMenuHandlers {
                   context,
                   message: 'No se pudo abrir el link',
                   duration: 3,
-                  style: ToastStyle.flat,
+                  style: ToastStyle.simple,
                 );
               }
             }

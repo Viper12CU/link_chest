@@ -32,7 +32,7 @@ class CustomAppbar extends StatelessWidget {
           decoration: BoxDecoration(
             boxShadow: boxShadow,
             color: categoryColor,
-            borderRadius: BorderRadius.circular(50.0),
+            borderRadius: BorderRadius.circular(15.0),
           ),
           child: GestureDetector(
             onLongPress: () {
@@ -66,7 +66,7 @@ class CustomAppbar extends StatelessWidget {
       return Container(
         width: 50,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
+          borderRadius: BorderRadius.circular(15.0),
           color: categoryColor,
           boxShadow: boxShadow,
         ),

@@ -37,6 +37,7 @@ class AddCategorySheet extends StatefulWidget {
 }
 
 class _AddCategorySheetState extends State<AddCategorySheet> {
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   String _selectedEmoji = '📁';
   Color _selectedColor = const Color(0xFFFF3B30);
@@ -194,128 +195,189 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(22, 0, 22, 22),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Title ───────────────────────────────────────
-            Text('New Category', style: Theme.of(context).textTheme.titleLarge),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Title ───────────────────────────────────────
+              Text(
+                'New Category',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
 
-            const SizedBox(height: 18),
+              const SizedBox(height: 18),
 
-            // ── Name field ──────────────────────────────────
-            Text('Title', style: Theme.of(context).textTheme.labelSmall),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(hintText: 'e.g. Reading list'),
-            ),
+              // ── Name field ──────────────────────────────────
+              Text('Title', style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 6),
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  hintText: 'e.g. Reading list',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Este campo es obligatorio';
+                  }
+                  return null;
+                },
+              ),
 
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            // ── Emoji picker ────────────────────────────────
-            Text('Icon', style: Theme.of(context).textTheme.labelSmall),
-            const SizedBox(height: 8),
-            Row(
-              spacing: 15.0,
-              children: [
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  width: _emojiShowing ? 348 : 54,
-                  height: _emojiShowing ? 320 : 52,
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outlineVariant,
+              // ── Emoji picker ────────────────────────────────
+              Text('Icon', style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 8),
+              Row(
+                spacing: 15.0,
+                children: [
+                  AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    width: _emojiShowing ? 348 : 54,
+                    height: _emojiShowing ? 320 : 52,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12.0),
+                    alignment: Alignment.center,
+                    child: Column(
+                      spacing: 5.0,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _emojiShowing = !_emojiShowing;
+                            });
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 7),
+                            child: Text(
+                              _selectedEmoji,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ),
+                        ),
+                        if (_emojiShowing)
+                          FutureBuilder(
+                            future: Future.delayed(
+                              const Duration(milliseconds: 250),
+                            ),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.done) {
+                                return emojiPicker(
+                                  handlerEmojiSelected,
+                                  context,
+                                );
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            },
+                          ),
+                      ],
                     ),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
-                  alignment: Alignment.center,
-                  child: Column(
-                    spacing: 5.0,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _emojiShowing = !_emojiShowing;
-                          });
+                  if (!_emojiShowing)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Seleciona un símbolo",
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                        Text(
+                          "El emoji representará esta categoría",
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              const SizedBox(height: 16),
+
+              // ── Color picker ────────────────────────────────
+              Text('Color', style: Theme.of(context).textTheme.labelSmall),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: [
+                  ..._colors.map((entry) {
+                    final isSelected = entry == _selectedColor;
+                    return GestureDetector(
+                      onTap: () => setState(() {
+                        _selectedColor = entry;
+                        _pickerColor = false;
+                      }),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: entry,
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: Colors.white, width: 3)
+                              : null,
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: entry.withValues(alpha: 0.5),
+                                    blurRadius: 0,
+                                    spreadRadius: 2,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        alignment: Alignment.center,
+                      ),
+                    );
+                  }),
+
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            content: SingleChildScrollView(
+                              child: colorPickerDialog(),
+                            ),
+                          );
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 7),
-                          child: Text(
-                            _selectedEmoji,
-                            style: const TextStyle(fontSize: 24),
-                          ),
-                        ),
-                      ),
-                      if (_emojiShowing)
-                        FutureBuilder(
-                          future: Future.delayed(
-                            const Duration(milliseconds: 250),
-                          ),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              return emojiPicker(handlerEmojiSelected, context);
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          },
-                        ),
-                    ],
-                  ),
-                ),
-                if (!_emojiShowing)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Seleciona un símbolo",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      Text(
-                        "El emoji representará esta categoría",
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
-                    ],
-                  ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            const SizedBox(height: 16),
-
-            // ── Color picker ────────────────────────────────
-            Text('Color', style: Theme.of(context).textTheme.labelSmall),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                ..._colors.map((entry) {
-                  final isSelected = entry == _selectedColor;
-                  return GestureDetector(
-                    onTap: () => setState(() {
-                      _selectedColor = entry;
-                      _pickerColor = false;
-                    }),
+                      );
+                    },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: entry,
+                        gradient: SweepGradient(
+                          colors: [
+                            Colors.blue,
+                            Colors.yellow,
+                            Colors.red,
+                            Colors.blue,
+                          ],
+                        ),
                         shape: BoxShape.circle,
-                        border: isSelected
+                        border: _pickerColor
                             ? Border.all(color: Colors.white, width: 3)
                             : null,
-                        boxShadow: isSelected
+                        boxShadow: _pickerColor
                             ? [
                                 BoxShadow(
-                                  color: entry.withValues(alpha: 0.5),
+                                  color: _selectedColor.withValues(alpha: 0.5),
                                   blurRadius: 0,
                                   spreadRadius: 2,
                                 ),
@@ -324,71 +386,29 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
                       ),
                       alignment: Alignment.center,
                     ),
-                  );
-                }),
-
-                GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          content: SingleChildScrollView(
-                            child: colorPickerDialog(),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      gradient: SweepGradient(
-                        colors: [
-                          Colors.blue,
-                          Colors.yellow,
-                          Colors.red,
-                          Colors.blue,
-                        ],
-                      ),
-                      shape: BoxShape.circle,
-                      border: _pickerColor
-                          ? Border.all(color: Colors.white, width: 3)
-                          : null,
-                      boxShadow: _pickerColor
-                          ? [
-                              BoxShadow(
-                                color: _selectedColor.withValues(alpha: 0.5),
-                                blurRadius: 0,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    alignment: Alignment.center,
                   ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Create button ───────────────────────────────
+              ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    handlerSubmit();
+                    Navigator.pop(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.secondary,
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
-            // ── Create button ───────────────────────────────
-            ElevatedButton(
-              onPressed: () {
-                handlerSubmit();
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.secondary,
+                child: Text(
+                  widget.isEditing ? 'Guardar Cambios' : 'Crear Categoría',
+                ),
               ),
-              child: Text(
-                widget.isEditing ? 'Guardar Cambios' : 'Crear Categoría',
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -93,7 +93,7 @@ class DatabaseHelper {
       db.execute('''
         INSERT INTO $tableCategories ($colCatId, $colCatTitle, $colCatIcon, $colCatColor)
         VALUES (?, ?, ?, ?);
-      ''', [defaultCategoryId, 'Ninguna', '📂', '$ColorParse().toColorString(Colors.redAccent)']);
+      ''', [defaultCategoryId, 'Default', '📂', '$ColorParse().toColorString(Colors.redAccent)']);
     }
   }
 

@@ -4,8 +4,8 @@ import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/category_selected_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
+import 'package:link_chest/services/shared_with_me.dart';
 import 'package:link_chest/utils/theme.dart';
-import 'package:link_chest/widgets/organisms/add_link_sheet.dart';
 import 'package:link_chest/widgets/pages/category_page.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -41,9 +41,12 @@ class _AppState extends State<App> {
     debugPrint('📱 [receive_sharing_intent] $message');
   }
 
+
+
   @override
   void initState() {
     super.initState();
+
 
     _logSharedFlow('Inicializando listeners de compartido');
 
@@ -52,7 +55,7 @@ class _AppState extends State<App> {
       (value) {
         _logSharedFlow('getMediaStream recibió ${value.length} archivo(s)');
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          _handleShared(value);
+          handleShared(value, context, navigatorKey);
         });
       },
       onError: (err) {
@@ -66,7 +69,7 @@ class _AppState extends State<App> {
         .then((value) {
           _logSharedFlow('getInitialMedia recibió ${value.length} archivo(s)');
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _handleShared(value);
+            handleShared(value, context, navigatorKey);
           });
           ReceiveSharingIntent.instance.reset();
           _logSharedFlow('reset ejecutado tras getInitialMedia');
@@ -76,65 +79,65 @@ class _AppState extends State<App> {
         });
   }
 
-  void _handleShared(List<SharedMediaFile> files) async {
-    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
-      context,
-      listen: false,
-    );
+  // void _handleShared(List<SharedMediaFile> files) async {
+  //   final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
+  //     context,
+  //     listen: false,
+  //   );
 
-    if (categoryProvider.categories.isEmpty) {
-      await categoryProvider.loadAll();
-    }
+  //   if (categoryProvider.categories.isEmpty) {
+  //     await categoryProvider.loadAll();
+  //   }
 
-    _logSharedFlow('Procesando ${files.length} archivo(s) compartido(s)');
+  //   _logSharedFlow('Procesando ${files.length} archivo(s) compartido(s)');
 
-    if (files.isEmpty) return;
+  //   if (files.isEmpty) return;
 
-    final text = files
-        .where((f) => f.type == SharedMediaType.text)
-        .map((f) => f.path)
-        .join();
+  //   final text = files
+  //       .where((f) => f.type == SharedMediaType.text)
+  //       .map((f) => f.path)
+  //       .join();
 
-    _logSharedFlow(
-      'Contenido de texto detectado: ${text.isEmpty ? "vacío" : text}',
-    );
+  //   _logSharedFlow(
+  //     'Contenido de texto detectado: ${text.isEmpty ? "vacío" : text}',
+  //   );
 
-    if (text.isEmpty) return;
+  //   if (text.isEmpty) return;
 
-    final urlMatch = RegExp(r'https?://\S+').firstMatch(text);
-    final url = urlMatch?.group(0) ?? text;
+  //   final urlMatch = RegExp(r'https?://\S+').firstMatch(text);
+  //   final url = urlMatch?.group(0) ?? text;
 
-    _logSharedFlow('URL resuelta: $url');
+  //   _logSharedFlow('URL resuelta: $url');
 
-    final ctx = navigatorKey.currentContext;
-    if (ctx == null) {
-      _logSharedFlow(
-        'navigatorKey.currentContext es null; no se puede abrir AddLinkSheet',
-      );
-      return;
-    }
+  //   final ctx = navigatorKey.currentContext;
+  //   if (ctx == null) {
+  //     _logSharedFlow(
+  //       'navigatorKey.currentContext es null; no se puede abrir AddLinkSheet',
+  //     );
+  //     return;
+  //   }
 
-    final defaultCategory = categoryProvider.categories.firstWhere(
-      (c) => c.id == DatabaseHelper.defaultCategoryId,
-      orElse: () => categoryProvider.categories.first,
-    );
+  //   final defaultCategory = categoryProvider.categories.firstWhere(
+  //     (c) => c.id == DatabaseHelper.defaultCategoryId,
+  //     orElse: () => categoryProvider.categories.first,
+  //   );
 
-    final linkToAdd = LinkModel(
-      id: null,
-      title: 'Hola',
-      url: url,
-      categoryId: defaultCategory.id!,
-    );
+  //   final linkToAdd = LinkModel(
+  //     id: null,
+  //     title: 'Hola',
+  //     url: url,
+  //     categoryId: defaultCategory.id!,
+  //   );
 
-    _logSharedFlow(
-      'Abriendo AddLinkSheet para la categoría ${defaultCategory.id}',
-    );
+  //   _logSharedFlow(
+  //     'Abriendo AddLinkSheet para la categoría ${defaultCategory.id}',
+  //   );
 
 
-    if (context.mounted) {
-      AddLinkSheet.show(ctx, defaultCategory, linkToEdit: linkToAdd, isEditing: true, isShared: true);
-    }
-  }
+  //   if (context.mounted) {
+  //     AddLinkSheet.show(ctx, defaultCategory, linkToEdit: linkToAdd, isEditing: true, isShared: true);
+  //   }
+  // }
 
   @override
   void dispose() {
