@@ -1,122 +1,115 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:link_chest/database/database.dart';
+import 'package:link_chest/providers/category_provider.dart';
+import 'package:link_chest/providers/category_selected_provider.dart';
+import 'package:link_chest/providers/link_provider.dart';
+import 'package:link_chest/services/shared_with_me.dart';
+import 'package:link_chest/utils/theme.dart';
+import 'package:link_chest/widgets/pages/category_page.dart';
+import 'package:provider/provider.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
-void main() {
-  runApp(const MyApp());
+final navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Color(0xFFF0F2F8), 
+      statusBarIconBrightness: Brightness.dark, 
+      systemNavigationBarColor: Color(0xFFF0F2F8),
+    ),
+  );
+  WidgetsFlutterBinding.ensureInitialized();
+  await DatabaseHelper().init();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CategorySelectedProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()..loadAll()),
+        ChangeNotifierProvider(create: (_) => LinkProvider()..loadAll()),
+      ],
+      child: const App(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatefulWidget {
+  const App({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  late StreamSubscription _intentSub;
+
+  void _logSharedFlow(String message) {
+    debugPrint('📱 [receive_sharing_intent] $message');
+  }
+
+
+
+  @override
+  void initState() {
+    super.initState();
+
+
+    _logSharedFlow('Inicializando listeners de compartido');
+
+    // App abierta en background y llega un share
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (value) {
+        _logSharedFlow('getMediaStream recibió ${value.length} archivo(s)');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          handleShared(value, context, navigatorKey);
+        });
+      },
+      onError: (err) {
+        _logSharedFlow('getMediaStream error: $err');
+      },
     );
+
+    // App cerrada (cold start), se abre desde el share sheet
+    ReceiveSharingIntent.instance
+        .getInitialMedia()
+        .then((value) {
+          _logSharedFlow('getInitialMedia recibió ${value.length} archivo(s)');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            handleShared(value, context, navigatorKey);
+          });
+          ReceiveSharingIntent.instance.reset();
+          _logSharedFlow('reset ejecutado tras getInitialMedia');
+        })
+        .catchError((err) {
+          _logSharedFlow('getInitialMedia error: $err');
+        });
   }
-}
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void dispose() {
+    _logSharedFlow('Cancelando listener de compartido');
+    _intentSub.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
+      context,
+    );
+    final CategoryModel initialCategory = categoryProvider.categories.first;
+
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
+      title: 'Link Chest',
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.light,
+      home: CategoryPage(category: initialCategory),
     );
   }
 }
