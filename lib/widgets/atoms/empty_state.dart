@@ -1,9 +1,8 @@
-
-
 import 'package:flutter/material.dart';
 
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key});
+  final bool vault;
+  const EmptyState({super.key, this.vault = false});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,9 @@ class EmptyState extends StatelessWidget {
           ),
           const SizedBox(height: 5),
           Text(
-            'Toca + para agregar tu primer link',
+            vault
+                ? 'Aquí se muestran tus links privados '
+                : 'Toca + para agregar tu primer link',
             style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],

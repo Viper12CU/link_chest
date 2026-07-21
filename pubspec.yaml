@@ -51,9 +51,6 @@ dependencies:
   local_auth_android: ^2.0.9
   receive_sharing_intent: ^1.9.0
   dotlottie_flutter: ^0.1.4
-  draggable_home: ^1.0.5
-
-  
 dev_dependencies:
   flutter_test:
     sdk: flutter

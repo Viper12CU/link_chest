@@ -25,7 +25,7 @@ class _VaultTemplateState extends State<VaultTemplate> {
     final LinkMenuHandlers menuHandlers = LinkMenuHandlers(context: context);
 
     if (links.isEmpty) {
-      return const EmptyState();
+      return const EmptyState(vault: true,);
     }
 
 
