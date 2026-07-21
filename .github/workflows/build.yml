@@ -69,7 +69,7 @@ jobs:
 
         #9 Upload Artifacts
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: Releases
           path: |
