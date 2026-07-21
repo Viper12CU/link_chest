@@ -52,7 +52,7 @@ jobs:
         
        #6 Building APK
       - name: Build APK
-        run: flutter build apk --release --no-lint
+        run: flutter build apk --release
 
         #7 Building App Bundle (aab)
       - name: Build appBundle
