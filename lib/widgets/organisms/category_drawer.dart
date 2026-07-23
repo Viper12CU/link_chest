@@ -18,9 +18,8 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
       child: Column(
         children: [
           header(),
-          addCategoryButton(),
           Expanded(child: CategoryItemsGroup()),
-          ButtonAboutDialog()
+          ButtonAboutDialog(),
         ],
       ),
     );
@@ -35,7 +34,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
 
       child: Container(
         padding: EdgeInsets.fromLTRB(16.0, 30.0, 16.0, 6.0),
-        height: 200.0,
+        height: 270.0,
         width: double.infinity,
         color: Theme.of(context).colorScheme.primary,
         child: Column(
@@ -55,6 +54,8 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
               "Tú colección personal de links",
               style: TextStyle(color: Colors.white70, fontSize: 16.0),
             ),
+            SizedBox(height: 20.0),
+            addCategoryButton(),
           ],
         ),
       ),
@@ -62,17 +63,18 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
   }
 
   Widget addCategoryButton() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: OutlinedButton(
-        onPressed: () {
-          AddCategorySheet.show(context);
-        },
-        child: Row(
-          spacing: 10.0,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [Icon(Icons.add), Text("Agregar categoría")],
-        ),
+    return OutlinedButton(
+      style: OutlinedButton.styleFrom(side: BorderSide(color: Colors.white, width: 2)),
+      onPressed: () {
+        AddCategorySheet.show(context);
+      },
+      child: Row(
+        spacing: 10.0,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.add, color: Colors.white),
+          Text("Agregar categoría", style: TextStyle(color: Colors.white)),
+        ],
       ),
     );
   }
