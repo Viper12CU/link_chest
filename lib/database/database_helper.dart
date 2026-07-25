@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -92,7 +93,7 @@ class DatabaseHelper {
       db.execute('''
         INSERT INTO $tableCategories ($colCatId, $colCatTitle, $colCatIcon, $colCatColor)
         VALUES (?, ?, ?, ?);
-      ''', [defaultCategoryId, 'Default', '📂', '$ColorParse().toColorString(Colors.redAccent)']);
+      ''', [defaultCategoryId, 'Default', '📂', (ColorParse().toColorString(Colors.redAccent))]);
     }
   }
 

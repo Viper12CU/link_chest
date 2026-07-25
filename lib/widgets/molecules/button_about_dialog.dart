@@ -1,4 +1,3 @@
-import 'package:custom_clippers/custom_clippers.dart';
 import 'package:flutter/material.dart';
 // import 'package:link_chest/database/models/category_model.dart';
 // import 'package:link_chest/providers/category_provider.dart';
@@ -10,65 +9,63 @@ class ButtonAboutDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: GestureDetector(
-        onTap: () {
-          showAboutDialog(
-            context: context,
-            applicationIcon: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/logo.png',
-                width: 70,
-                height: 70,
-                fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        showAboutDialog(
+          context: context,
+          applicationIcon: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/logo.png',
+              width: 70,
+              height: 70,
+              fit: BoxFit.cover,
+            ),
+          ),
+          applicationName: "Link Chest",
+          applicationVersion: "0.1.1",
+          applicationLegalese:
+              "© ${DateTime.now().year} Link Chest. Todos los derechos reservados.",
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 18.0,
+                horizontal: 8.0,
+              ),
+              child: Text(
+                "Aquí no se pierden links. Link Chest te ayuda a ordenar tus enlaces favoritos para encontrarlos cuando de verdad los necesitas. ✨📌\n\nHecho para tí por Fabian Lemus.",
+                textAlign: TextAlign.center,
               ),
             ),
-            applicationName: "Link Chest",
-            applicationVersion: "1.0.0",
-            applicationLegalese:
-                "© ${DateTime.now().year} Link Chest. Todos los derechos reservados.",
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 18.0,
-                  horizontal: 8.0,
-                ),
-                child: Text(
-                  "Aquí no se pierden links. Link Chest te ayuda a ordenar tus enlaces favoritos para encontrarlos cuando de verdad los necesitas. ✨📌\n\nHecho para tí por Fabian Lemus.",
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ],
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Divider(height: 1, color: Colors.grey[300], endIndent: 3, indent: 3),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 8.0),
-                child: Row(
-                  spacing: 10,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.info_outline_rounded),
-                    Text(
-                      "ACERCA DE",
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.grey,
-                        letterSpacing: 1,
-                      ),
+          ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Divider(height: 1, color: Colors.grey[300], endIndent: 3, indent: 3),
+    
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 8.0),
+              child: Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline_rounded),
+                  Text(
+                    "ACERCA DE",
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                      letterSpacing: 1,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
