@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:link_chest/database/database_helper.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/category_selected_provider.dart';
 import 'package:link_chest/widgets/atoms/category_drawer_item.dart';
 import 'package:provider/provider.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 class CategoryItemsGroup extends StatefulWidget {
   const CategoryItemsGroup({super.key});
