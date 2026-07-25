@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:link_chest/database/database_helper.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/category_selected_provider.dart';
 import 'package:link_chest/widgets/atoms/category_drawer_item.dart';
 import 'package:provider/provider.dart';
+import 'package:sqlite3/sqlite3.dart';
 
 class CategoryItemsGroup extends StatefulWidget {
   const CategoryItemsGroup({super.key});
@@ -13,7 +15,6 @@ class CategoryItemsGroup extends StatefulWidget {
 }
 
 class _CategoryItemsGroupState extends State<CategoryItemsGroup> {
-  int selectedIndex = -1;
   
   
   
@@ -22,6 +23,7 @@ class _CategoryItemsGroupState extends State<CategoryItemsGroup> {
     final CategorySelectedProvider provider = Provider.of<CategorySelectedProvider>(context);
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(context);
     final List<CategoryModel> categorys = categoryProvider.categories;
+
   
 
     return ListView.builder(
@@ -29,9 +31,9 @@ class _CategoryItemsGroupState extends State<CategoryItemsGroup> {
       itemCount: categorys.length,
       itemBuilder: (context, index) => CategoryDrawerItem(
         category: categorys[index],
-        isSelected: provider.selectedIndex == index,
+        isSelected: provider.selectedIndex == categorys[index].id!,
         onSelected: () {
-          provider.select(index);
+          provider.select(categorys[index].id!);
         },
       ),
     );

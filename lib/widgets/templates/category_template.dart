@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/database/models/link_model.dart';
 import 'package:link_chest/providers/link_provider.dart';
@@ -20,6 +21,7 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
   Widget build(BuildContext context) {
     final LinkProvider linkProvider = Provider.of<LinkProvider>(context);
     final List<LinkModel> links = linkProvider.byCategory(widget.category.id!);
+    final bool isLarge = MediaQuery.of(context).size.width >= 600;
 
     final LinkMenuHandlers menuHandlers = LinkMenuHandlers(context: context);
 
@@ -27,7 +29,10 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
       return const EmptyState();
     }
 
-    return ListView.builder(
+    return MasonryGridView.count(
+      crossAxisCount: 1,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: links.length,
       itemBuilder: (context, index) {
@@ -52,4 +57,3 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
     );
   }
 }
-

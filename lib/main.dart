@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/category_selected_provider.dart';
@@ -14,19 +13,14 @@ import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Color(0xFFF0F2F8), 
-      statusBarIconBrightness: Brightness.dark, 
-      systemNavigationBarColor: Color(0xFFF0F2F8),
-    ),
-  );
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper().init();
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => CategorySelectedProvider()),
+        ChangeNotifierProvider(
+          create: (_) => CategorySelectedProvider()..init(),
+        ),
         ChangeNotifierProvider(create: (_) => CategoryProvider()..loadAll()),
         ChangeNotifierProvider(create: (_) => LinkProvider()..loadAll()),
       ],
@@ -49,12 +43,9 @@ class _AppState extends State<App> {
     debugPrint('📱 [receive_sharing_intent] $message');
   }
 
-
-
   @override
   void initState() {
     super.initState();
-
 
     _logSharedFlow('Inicializando listeners de compartido');
 
@@ -87,7 +78,6 @@ class _AppState extends State<App> {
         });
   }
 
-
   @override
   void dispose() {
     _logSharedFlow('Cancelando listener de compartido');
@@ -100,7 +90,12 @@ class _AppState extends State<App> {
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
       context,
     );
-    final CategoryModel initialCategory = categoryProvider.categories.first;
+    final int initialIndex = Provider.of<CategorySelectedProvider>(
+      context,
+    ).selectedIndex;
+    final CategoryModel initialCategory =
+        categoryProvider.getById(initialIndex) ??
+        categoryProvider.getById(DatabaseHelper.defaultCategoryId)!;
 
     return MaterialApp(
       navigatorKey: navigatorKey,
