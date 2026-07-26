@@ -23,7 +23,7 @@ class ButtonAboutDialog extends StatelessWidget {
             ),
           ),
           applicationName: "Link Chest",
-          applicationVersion: "0.1.1",
+          applicationVersion: "0.1.2",
           applicationLegalese:
               "© ${DateTime.now().year} Link Chest. Todos los derechos reservados.",
           children: [
