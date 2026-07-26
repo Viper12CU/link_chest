@@ -38,7 +38,14 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-        #5 Setup Keystore
+        #5 Extract Version (movido antes del build, para poder usarlo al nombrar los archivos)
+      - name: Extract version from pubspec.yaml
+        id: extract_version
+        run: |
+          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r' | cut -d '+' -f 1)
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+        #6 Setup Keystore
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
@@ -50,15 +57,15 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=keystore.jks" >> android/key.properties
         
-       #6 Building APK
+       #7 Building APK
       - name: Build APK
         run: flutter build apk --release
 
-        #7 Building App Bundle (aab)
+        #8 Building App Bundle (aab)
       - name: Build appBundle
         run: flutter build appbundle
 
-      #   #8 Build IPA ( IOS Build )
+      #   #9 Build IPA ( IOS Build )
       # - name: Build IPA
       #   run: flutter build ipa --no-codesign
 
@@ -67,24 +74,25 @@ jobs:
       #     cd build
       #     tar -czf ios_build.tar.gz ios
 
-        #9 Upload Artifacts
+        #10 Rename APK & AAB
+      - name: Rename artifacts
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk \
+             build/app/outputs/flutter-apk/link-chest-${{ env.VERSION }}.apk
+          mv build/app/outputs/bundle/release/app-release.aab \
+             build/app/outputs/bundle/release/link-chest-${{ env.VERSION }}.aab
+
+        #11 Upload Artifacts
       - name: Upload Artifacts
         uses: actions/upload-artifact@v7
         with:
           name: Releases
           path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
+            build/app/outputs/flutter-apk/link-chest-${{ env.VERSION }}.apk
+            build/app/outputs/bundle/release/link-chest-${{ env.VERSION }}.aab
             # build/ios_build.tar.gz
 
-        #10 Extract Version
-      - name: Extract version from pubspec.yaml
-        id: extract_version
-        run: |
-          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
-          echo "VERSION=$version" >> $GITHUB_ENV
-
-        #11 Check if Tag Exists
+        #12 Check if Tag Exists
       - name: Check if Tag Exists
         id: check_tag
         run: |
@@ -94,7 +102,7 @@ jobs:
             echo "TAG_EXISTS=false" >> $GITHUB_ENV
           fi
 
-        #12 Modify Tag if it Exists
+        #13 Modify Tag if it Exists
       - name: Modify Tag
         if: env.TAG_EXISTS == 'true'
         id: modify_tag
@@ -102,10 +110,10 @@ jobs:
           new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
           echo "VERSION=$new_version" >> $GITHUB_ENV
         
-        #13 Create Release
+        #14 Create Release
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab,build/ios_build.tar.gz"
+          artifacts: "build/app/outputs/flutter-apk/link-chest-${{ env.VERSION }}.apk,build/app/outputs/bundle/release/link-chest-${{ env.VERSION }}.aab"
           tag: v${{ env.VERSION }}
           token: ${{ secrets.TOKEN }}
