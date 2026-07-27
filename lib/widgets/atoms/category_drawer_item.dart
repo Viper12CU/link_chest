@@ -34,28 +34,28 @@ class CategoryDrawerItem extends StatelessWidget {
       ConfirmDialog.show(
         context: context,
         title: '¿Eliminar categoría?',
-        description: 'Elimina esta categoría y sus links o reasignalos a la categoría por defecto.',
+        description:
+            'Elimina esta categoría y sus links o reasignalos a la categoría por defecto.',
         actions: [
           ConfirmAction(
             label: 'Eliminar y Reasignar',
             style: ConfirmActionStyle.destructive,
             onTap: () async {
-               await categoryProvider.deleteAndReassign(categoryId!);
-               linkProvider.reassignToDefault(categoryId);
-            }
-               
+              await categoryProvider.deleteAndReassign(categoryId!);
+              linkProvider.reassignToDefault(categoryId);
+            },
           ),
           ConfirmAction(
             label: 'Eliminar Completamente',
             style: ConfirmActionStyle.destructive,
             onTap: () async {
-                await categoryProvider.deleteWithLinks(categoryId!);
-                linkProvider.removeByCategory(categoryId);}
+              await categoryProvider.deleteWithLinks(categoryId!);
+              linkProvider.removeByCategory(categoryId);
+            },
           ),
         ],
       );
     }
-
 
     void handleEditCategory(CategoryModel category) {
       AddCategorySheet.show(context, categroyToEdit: category, isEditing: true);
@@ -87,15 +87,21 @@ class CategoryDrawerItem extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                spacing: 10,
-                children: [
-                  Text(category.icon, style: TextStyle(fontSize: 22)),
-                  Text(
-                    category.title,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  spacing: 10,
+                  children: [
+                    Text(category.icon, style: TextStyle(fontSize: 22)),
+                    Flexible(
+                      child: Text(
+                        category.title,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               Row(
                 spacing: 12,
@@ -108,7 +114,7 @@ class CategoryDrawerItem extends StatelessWidget {
                     height: 15,
                     width: 15,
                   ),
-                  Text(links.length.toString())
+                  Text(links.length.toString()),
                 ],
               ),
             ],

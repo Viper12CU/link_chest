@@ -33,8 +33,7 @@ class LinkCard extends StatefulWidget {
     this.onLock,
     this.onDelete,
     this.onMoveTo,
-    this.onEdit
-
+    this.onEdit,
   });
 
   @override
@@ -45,13 +44,14 @@ class _LinkCardState extends State<LinkCard> {
   late CategoryModel category;
 
   void _loadCategory() {
-    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(context, listen: false);
+    final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
+      context,
+      listen: false,
+    );
     category = categoryProvider.getById(widget.categoryId!)!;
   }
 
-
-
-@override
+  @override
   void initState() {
     super.initState();
     if (widget.categoryId != null) {
@@ -61,6 +61,8 @@ class _LinkCardState extends State<LinkCard> {
 
   @override
   Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 14, 14),
@@ -76,7 +78,7 @@ class _LinkCardState extends State<LinkCard> {
                       Flexible(
                         child: Text(
                           widget.title,
-                          style: Theme.of(context).textTheme.titleMedium,
+                          style: textTheme.headlineSmall,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -100,8 +102,10 @@ class _LinkCardState extends State<LinkCard> {
 
             // ── Description ──────────────────────────────
             Text(
-              widget.description!.isNotEmpty ? widget.description! : 'Sin descripción',
-              style: Theme.of(context).textTheme.bodyMedium,
+              widget.description!.isNotEmpty
+                  ? widget.description!
+                  : 'Sin descripción',
+              style: textTheme.bodyMedium!.copyWith(color: Colors.grey),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),
@@ -114,11 +118,10 @@ class _LinkCardState extends State<LinkCard> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: widget.onOpen,
-                    icon: const Icon(Icons.open_in_new, size: 13),
+                    icon: const Icon(Icons.open_in_new, size: 15.0),
                     label: Text(
                       widget.url,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12),
                     ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -133,8 +136,7 @@ class _LinkCardState extends State<LinkCard> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                if (widget.isLocked)
-                CategoryBadge(category: category)
+                if (widget.isLocked) CategoryBadge(category: category),
               ],
             ),
           ],
@@ -143,4 +145,3 @@ class _LinkCardState extends State<LinkCard> {
     );
   }
 }
-

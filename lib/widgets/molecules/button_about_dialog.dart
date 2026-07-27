@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-// import 'package:link_chest/database/models/category_model.dart';
-// import 'package:link_chest/providers/category_provider.dart';
-// import 'package:link_chest/utils/shared/color_parse.dart';
-// import 'package:provider/provider.dart';
+
 
 class ButtonAboutDialog extends StatelessWidget {
   const ButtonAboutDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
     return GestureDetector(
       onTap: () {
         showAboutDialog(
@@ -23,7 +22,7 @@ class ButtonAboutDialog extends StatelessWidget {
             ),
           ),
           applicationName: "Link Chest",
-          applicationVersion: "0.1.3",
+          applicationVersion: "0.2.0",
           applicationLegalese:
               "© ${DateTime.now().year} Link Chest. Todos los derechos reservados.",
           children: [
@@ -35,7 +34,9 @@ class ButtonAboutDialog extends StatelessWidget {
               child: Text(
                 "Aquí no se pierden links. Link Chest te ayuda a ordenar tus enlaces favoritos para encontrarlos cuando de verdad los necesitas. ✨📌\n\nHecho para tí por Fabian Lemus.",
                 textAlign: TextAlign.center,
+                style: textTheme.labelMedium,
               ),
+              
             ),
           ],
         );
@@ -52,15 +53,14 @@ class ButtonAboutDialog extends StatelessWidget {
                 spacing: 10,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.info_outline_rounded),
+                  Icon(Icons.info_outline_rounded, color: Colors.grey,),
                   Text(
                     "ACERCA DE",
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                    style: textTheme.bodyLarge!.copyWith(
                       color: Colors.grey,
-                      letterSpacing: 1,
+                      letterSpacing: 2,
                     ),
+                    
                   ),
                 ],
               ),

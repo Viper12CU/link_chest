@@ -15,7 +15,7 @@ class LocalAuthService {
     try {
       final canCheck = await _auth.canCheckBiometrics;
       final isSupported = await _auth.isDeviceSupported();
-      return canCheck || isSupported;
+      return canCheck && isSupported;
     } on PlatformException catch (_) {
       return false;
     }
@@ -51,6 +51,7 @@ class LocalAuthService {
           ),
         ],
       );
+
     } on PlatformException catch (e) {
       // e.code puede ser: notAvailable, notEnrolled, lockedOut, permanentlyLockedOut
       if (e.code == "userCanceled") {

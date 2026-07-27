@@ -5,7 +5,7 @@ import 'package:link_chest/widgets/atoms/biometric_auth_button.dart';
 import 'package:link_chest/widgets/pages/vault_page.dart';
 
 class AuthTemplate extends StatefulWidget {
-  const AuthTemplate({super.key});
+  const AuthTemplate({super.key}); 
 
   @override
   State<AuthTemplate> createState() => _AuthTemplateState();
@@ -18,6 +18,10 @@ class _AuthTemplateState extends State<AuthTemplate> {
     final success = await LocalAuthService.authenticateWithFallback(
       reason: 'Confirma tu identidad para ver los links privados',
     );
+
+    final avalible = await LocalAuthService.canAuthenticate();
+
+    debugPrint("Awalible: ${avalible.toString()}");
 
     if (success) {
       // acceso concedido

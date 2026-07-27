@@ -6,6 +6,9 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -14,14 +17,14 @@ class EmptyState extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             'Sin links todavía',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: textTheme.headlineSmall,
           ),
           const SizedBox(height: 5),
           Text(
             vault
                 ? 'Aquí se muestran tus links privados '
                 : 'Toca + para agregar tu primer link',
-            style: Theme.of(context).textTheme.bodyMedium,
+            style: textTheme.labelMedium,
           ),
         ],
       ),

@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'package:link_chest/main.dart';
+import 'package:link_chest/services/shared_with_me.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:link_chest/database/models/category_model.dart';
@@ -6,6 +9,7 @@ import 'package:link_chest/widgets/atoms/custom_appbar.dart';
 import 'package:link_chest/widgets/organisms/add_link_sheet.dart';
 import 'package:link_chest/widgets/organisms/category_drawer.dart';
 import 'package:link_chest/widgets/templates/category_template.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class CategoryPage extends StatefulWidget {
   final CategoryModel category;
@@ -16,25 +20,70 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  Color _getContrastColor(Color background) {
-    final brightness = ThemeData.estimateBrightnessForColor(background);
-    return brightness == Brightness.dark ? Colors.white : Colors.black;
-  }
+  late StreamSubscription _intentSub;
+
+  
 
   final SystemUiOverlayStyle _drawerOpen = SystemUiOverlayStyle(
-    statusBarColor: Color(0xFFFF5A5F),
+    statusBarColor: Color(0xFFDC586D),
     statusBarIconBrightness: Brightness.light,
   );
 
   final SystemUiOverlayStyle _initial = SystemUiOverlayStyle(
-    statusBarColor: Color(0xFFF0F2F8),
+    statusBarColor: Color(0xFFFFBB94),
     statusBarIconBrightness: Brightness.dark,
   );
+
+  void _logSharedFlow(String message) {
+    debugPrint('📱 [receive_sharing_intent] $message');
+  }
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(_initial);
+    try {
+      _logSharedFlow('Inicializando listeners de compartido');
+
+      // App abierta en background y llega un share
+      _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+        (value) {
+          _logSharedFlow('getMediaStream recibió ${value.length} archivo(s)');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            handleShared(value, context, navigatorKey);
+          });
+        },
+        onError: (err) {
+          _logSharedFlow('getMediaStream error: $err');
+        },
+      );
+
+      // App cerrada (cold start), se abre desde el share sheet
+      ReceiveSharingIntent.instance
+          .getInitialMedia()
+          .then((value) {
+            _logSharedFlow(
+              'getInitialMedia recibió ${value.length} archivo(s)',
+            );
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              handleShared(value, context, navigatorKey);
+            });
+            ReceiveSharingIntent.instance.reset();
+            _logSharedFlow('reset ejecutado tras getInitialMedia');
+          })
+          .catchError((err) {
+            _logSharedFlow('getInitialMedia error: $err');
+          });
+    } catch (e) {
+      debugPrint("Error: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _logSharedFlow('Cancelando listener de compartido');
+    _intentSub.cancel();
+    super.dispose();
   }
 
   @override
@@ -62,22 +111,31 @@ class _CategoryPageState extends State<CategoryPage> {
     );
   }
 
-  FloatingActionButton addButton(BuildContext context, Color categoryColor) =>
-      FloatingActionButton.extended(
-        elevation: 4.0,
-        backgroundColor: categoryColor,
-        onPressed: () {
-          AddLinkSheet.show(context, widget.category);
-        },
-        tooltip: "Nuevo link",
-        label: Text(
-          "Nuevo link",
-          style: TextStyle(color: _getContrastColor(categoryColor)),
+  FloatingActionButton addButton(BuildContext context, Color categoryColor) {
+    final ColorScheme cs = Theme.of(context).colorScheme;
+    Color getContrastColor(Color background) {
+    final brightness = ThemeData.estimateBrightnessForColor(background);
+    return brightness == Brightness.dark ? cs.onPrimary : cs.onSurface;
+  }
+
+    return FloatingActionButton.extended(
+      elevation: 4.0,
+      backgroundColor: categoryColor,
+      onPressed: () {
+        AddLinkSheet.show(context, widget.category);
+      },
+      tooltip: "Nuevo link",
+      label: Text(
+        "Nuevo link",
+        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+          color: getContrastColor(categoryColor),
         ),
-        icon: Icon(
-          Icons.add,
-          size: 32.0,
-          color: _getContrastColor(categoryColor),
-        ),
-      );
+      ),
+      icon: Icon(
+        Icons.add,
+        size: 30.0,
+        color: getContrastColor(categoryColor),
+      ),
+    );
+  }
 }
