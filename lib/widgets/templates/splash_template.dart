@@ -16,7 +16,7 @@ class SplashTemplate extends StatelessWidget {
     final ColorScheme cs = Theme.of(context).colorScheme;
 
     return DecoratedBox(
-      decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface),
       child: Stack(
         children: [
           Positioned(

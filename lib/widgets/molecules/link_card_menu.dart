@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
+import 'package:link_chest/services/local_auth.dart';
 import 'package:provider/provider.dart';
 
 enum MenuAction { copy, share, lock, move, delete, edit }
@@ -25,10 +26,15 @@ class CardMenu extends StatelessWidget {
     this.onEdit,
   });
 
+
+  Future<bool> canAuth() async {
+      final bool canAuth = await LocalAuthService.canAuthenticate();
+      return canAuth;
+    }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
     return PopupMenuButton<MenuAction>(
       onSelected: (action) => _handleAction(context, action),
       offset: const Offset(0, 8),
@@ -36,11 +42,13 @@ class CardMenu extends StatelessWidget {
       elevation: 8,
       itemBuilder: (context) => [
         _buildItem(
+          context: context,
           icon: Icons.copy_rounded,
           label: 'Copiar link',
           action: MenuAction.copy,
         ),
         _buildItem(
+          context: context,
           icon: Icons.share_rounded,
           label: 'Compartir link',
           action: MenuAction.share,
@@ -56,7 +64,12 @@ class CardMenu extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
               const SizedBox(width: 10),
-              const Expanded(child: Text('Mover a categoría')),
+              Expanded(
+                child: Text(
+                  'Mover a categoría',
+                  style: Theme.of(context).textTheme.bodyLarge!,
+                ),
+              ),
               Icon(
                 Icons.chevron_right_rounded,
                 size: 18,
@@ -68,6 +81,7 @@ class CardMenu extends StatelessWidget {
 
         // ── Bloquear / Desbloquear ──────────────────────
         _buildItem(
+          context: context,
           icon: isLocked ? Icons.lock_open_rounded : Icons.lock_outline_rounded,
           label: isLocked ? 'Desbloquear' : 'Bloquear',
           action: MenuAction.lock,
@@ -75,14 +89,16 @@ class CardMenu extends StatelessWidget {
 
         // ── Editar ──────────────────────
         _buildItem(
-          icon: Icons.edit_outlined, 
-          label: 'Editar', 
-          action: MenuAction.edit
-          ),
+          context: context,
+          icon: Icons.edit_outlined,
+          label: 'Editar',
+          action: MenuAction.edit,
+        ),
 
         // ── Divider + Eliminar ──────────────────────────
         const PopupMenuDivider(height: 6),
         _buildItem(
+          context: context,
           icon: Icons.delete_outline_rounded,
           label: 'Eliminar',
           action: MenuAction.delete,
@@ -104,6 +120,7 @@ class CardMenu extends StatelessWidget {
     required String label,
     required MenuAction action,
     bool isDanger = false,
+    required BuildContext context,
   }) {
     return PopupMenuItem<MenuAction>(
       value: action,
@@ -118,9 +135,9 @@ class CardMenu extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: isDanger
-                  ? const TextStyle(color: Color(0xFFFF5A5F))
-                  : null,
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                color: isDanger ? Color(0xFFFF5A5F) : null,
+              ),
             ),
           ),
         ],

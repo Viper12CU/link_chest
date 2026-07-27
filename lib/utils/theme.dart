@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // ── Palette ──────────────────────────────────────────────
-  static const _background     = Color(0xFFF0F2F8);
-  static const _backgroundDark = Color(0xFF1A1D2E);
-  static const _surfaceLight   = Color(0xFFFFFFFF);
-  static const _surfaceDark    = Color(0xFF252840);
-  static const _primary        = Color(0xFFFF5A5F);
-  static const _secondary      = Color(0xFF7B61FF);
-  static const _accentBlue     = Color(0xFF4FACFE);
-  static const _accentAmber    = Color(0xFFFFB347);
-  static const _textPrimary    = Color(0xFF1A1D2E);
-  static const _textSecondary  = Color(0xFF9BA3B8);
+ static const _background = Color(0xFFFFBB94);      // durazno claro (FFBB94)
+static const _backgroundDark = Color(0xFF4C1D3D);   // ciruela oscuro (4C1D3D)
+static const _surfaceLight = Color(0xFFFFFFFF);     // blanco puro para cards sobre el durazno
+static const _surfaceDark = Color(0xFF852E4E);      // ciruela medio (852E4E)
+static const _primary = Color(0xFFDC586D);          // rosa-magenta (DC586D)
+static const _secondary = Color(0xFFA33757);        // magenta oscuro (A33757)
+static const _accentBlue = Color(0xFFFB9590);       // salmón (FB9590) — ver nota
+static const _accentAmber = Color(0xFFFFBB94);      // durazno (FFBB94)
+static const _textPrimary = Color(0xFF4C1D3D);      // ciruela oscuro (4C1D3D)
+static const _textSecondary = Color(0xFFA33757);    // magenta oscuro (A33757)
 
   // ── Shared shape ─────────────────────────────────────────
   static final _cardShape = RoundedRectangleBorder(
@@ -23,8 +23,10 @@ class AppTheme {
       InputDecorationTheme(
         filled: true,
         fillColor: cs.surface,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: cs.outlineVariant),
@@ -57,16 +59,13 @@ class AppTheme {
       onPrimary: Colors.white,
       outline: const Color(0xFFE4E7F0),
       outlineVariant: const Color(0xFFEEF0F6),
-    ).copyWith(
-      tertiary: _accentBlue,
-      tertiaryContainer: _accentAmber,
-    );
+    ).copyWith(tertiary: _accentBlue, tertiaryContainer: _accentAmber);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: cs,
       scaffoldBackgroundColor: _background,
-      fontFamily: 'Poppins',
+      fontFamily: 'PlusJakartaSans',
 
       // AppBar
       appBarTheme: const AppBarTheme(
@@ -143,9 +142,9 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
           shape: const StadiumBorder(),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontFamily: 'PlusJakartaSans',
+            fontWeight: FontWeight.w400,
+            fontSize: 12,
           ),
         ),
       ),
@@ -188,28 +187,98 @@ class AppTheme {
         contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         iconColor: _textSecondary,
         titleTextStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'PlusJakartaSans',
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: _textPrimary,
         ),
         subtitleTextStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'PlusJakartaSans',
           fontSize: 12,
           color: _textSecondary,
         ),
       ),
 
-      // Text
+      // Text // fuente por defecto (body)
       textTheme: const TextTheme(
-        displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: _textPrimary),
-        headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: _textPrimary),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _textPrimary),
-        titleMedium: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: _textPrimary),
-        bodyLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: _textPrimary),
-        bodyMedium: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _textSecondary),
-        bodySmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _textSecondary),
-        labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _textSecondary),
+        // --- Headings -> Sora ---
+        displayLarge: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w700,
+          fontSize: 32,
+        ),
+        displayMedium: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w700,
+          fontSize: 28,
+        ),
+        displaySmall: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w600,
+          fontSize: 24,
+        ),
+        headlineLarge: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w600,
+          fontSize: 22,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w600,
+          fontSize: 20,
+        ),
+        headlineSmall: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w600,
+          fontSize: 18,
+        ),
+        titleLarge: TextStyle(
+          fontFamily: 'Sora',
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+
+        // --- Body -> Plus Jakarta Sans ---
+        titleMedium: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w500,
+          fontSize: 16,
+        ),
+        titleSmall: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+        ),
+        bodyLarge: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w400,
+          fontSize: 16,
+        ),
+        bodyMedium: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+        ),
+        bodySmall: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w400,
+          fontSize: 12,
+        ),
+        labelLarge: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w500,
+          fontSize: 14,
+        ),
+        labelMedium: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w500,
+          fontSize: 12,
+        ),
+        labelSmall: TextStyle(
+          fontFamily: 'PlusJakartaSans',
+          fontWeight: FontWeight.w500,
+          fontSize: 11,
+        ),
       ),
 
       iconTheme: const IconThemeData(color: _textSecondary, size: 22),
@@ -228,10 +297,7 @@ class AppTheme {
       onPrimary: Colors.white,
       outline: const Color(0xFF2E3250),
       outlineVariant: const Color(0xFF2A2D45),
-    ).copyWith(
-      tertiary: _accentBlue,
-      tertiaryContainer: _accentAmber,
-    );
+    ).copyWith(tertiary: _accentBlue, tertiaryContainer: _accentAmber);
 
     return ThemeData(
       useMaterial3: true,
@@ -346,14 +412,46 @@ class AppTheme {
       ),
 
       textTheme: const TextTheme(
-        displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.w700, color: Colors.white),
-        headlineMedium: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
-        titleLarge: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
-        titleMedium: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white),
-        bodyLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white),
-        bodyMedium: TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: _textSecondary),
-        bodySmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: _textSecondary),
-        labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: _textSecondary),
+        displayLarge: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+        headlineMedium: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        titleLarge: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        bodyLarge: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.white,
+        ),
+        bodyMedium: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: _textSecondary,
+        ),
+        bodySmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          color: _textSecondary,
+        ),
+        labelSmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: _textSecondary,
+        ),
       ),
 
       iconTheme: const IconThemeData(color: _textSecondary, size: 22),

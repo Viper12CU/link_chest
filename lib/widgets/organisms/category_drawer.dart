@@ -26,6 +26,8 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
   }
 
   Widget header() {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
     return ClipPath(
       clipBehavior: Clip.hardEdge,
       clipper: DirectionalWaveClipper(
@@ -44,15 +46,11 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
           children: [
             Text(
               "Link Chest",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-                fontWeight: FontWeight.bold,
-              ),
+              style: textTheme.displayMedium!.copyWith(color: Colors.white),
             ),
             Text(
               "Tú colección personal de links",
-              style: TextStyle(color: Colors.white70, fontSize: 16.0),
+              style: textTheme.labelLarge!.copyWith(color: Colors.white),
             ),
             SizedBox(height: 20.0),
             addCategoryButton(),
@@ -63,8 +61,12 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
   }
 
   Widget addCategoryButton() {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
     return OutlinedButton(
-      style: OutlinedButton.styleFrom(side: BorderSide(color: Colors.white, width: 2)),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: Colors.white, width: 2),
+      ),
       onPressed: () {
         AddCategorySheet.show(context);
       },
@@ -73,7 +75,11 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.add, color: Colors.white),
-          Text("Agregar categoría", style: TextStyle(color: Colors.white)),
+
+          Text(
+            "Agregar categoría",
+            style: textTheme.labelLarge!.copyWith(color: Colors.white),
+          ),
         ],
       ),
     );
