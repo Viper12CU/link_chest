@@ -137,6 +137,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.3"
+  feature_discovery:
+    dependency: "direct main"
+    description:
+      name: feature_discovery
+      sha256: "54c2e0c7cc229c4a7149ef21d933fa7115cf034b985926477488aa2d0619321b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.2"
   ffi:
     dependency: transitive
     description:

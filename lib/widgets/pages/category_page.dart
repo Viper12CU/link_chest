@@ -25,12 +25,12 @@ class _CategoryPageState extends State<CategoryPage> {
   
 
   final SystemUiOverlayStyle _drawerOpen = SystemUiOverlayStyle(
-    statusBarColor: Color(0xFFDC586D),
+    statusBarColor: Color(0xFF253745),
     statusBarIconBrightness: Brightness.light,
   );
 
   final SystemUiOverlayStyle _initial = SystemUiOverlayStyle(
-    statusBarColor: Color(0xFFFFBB94),
+    statusBarColor: Color.fromARGB(255, 227, 228, 228),
     statusBarIconBrightness: Brightness.dark,
   );
 
