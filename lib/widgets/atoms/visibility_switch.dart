@@ -5,14 +5,20 @@ class VisibilitySwitch extends StatelessWidget {
   final LinkStatus status;
   final ValueChanged<LinkStatus> onChanged;
 
-  const VisibilitySwitch({super.key, required this.status, required this.onChanged});
+  const VisibilitySwitch({
+    super.key,
+    required this.status,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
+    const switchOff = Color(0xFF9BA8AB);
+    const switchOn = Color(0xFF3D8361);
     final cs = Theme.of(context).colorScheme;
-    final activeColor = status == LinkStatus.private
-        ? cs.tertiaryContainer
-        : cs.tertiary;
+
+    
+    final activeColor = status == LinkStatus.private ? switchOff : switchOn;
 
     return GestureDetector(
       onTap: () => onChanged(

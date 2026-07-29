@@ -84,16 +84,29 @@ class DatabaseHelper {
       );
     ''');
 
-    // Insertar categoría "Ninguna" si no existe
+    // Nuevos valores para la categoría por defecto
+    const String defaultTitle = 'Sin categoría';
+    const String defaultIcon  = '📂';
+    final String defaultColor = ColorParse().toColorString(Color(0xFF253745));
+
     final existing = db.select(
       'SELECT id FROM $tableCategories WHERE id = ?',
       [defaultCategoryId],
     );
+
     if (existing.isEmpty) {
+      // No existe todavía (instalación nueva) -> se crea
       db.execute('''
         INSERT INTO $tableCategories ($colCatId, $colCatTitle, $colCatIcon, $colCatColor)
         VALUES (?, ?, ?, ?);
-      ''', [defaultCategoryId, 'Default', '📂', (ColorParse().toColorString(Colors.redAccent))]);
+      ''', [defaultCategoryId, defaultTitle, defaultIcon, defaultColor]);
+    } else {
+      // Ya existe (app actualizada en el dispositivo) -> se actualiza
+      db.execute('''
+        UPDATE $tableCategories
+        SET $colCatTitle = ?, $colCatIcon = ?, $colCatColor = ?
+        WHERE $colCatId = ?;
+      ''', [defaultTitle, defaultIcon, defaultColor, defaultCategoryId]);
     }
   }
 

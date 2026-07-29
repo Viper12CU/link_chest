@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
+import 'package:link_chest/services/local_auth.dart';
 import 'package:link_chest/widgets/atoms/visibility_switch.dart';
 import 'package:provider/provider.dart';
 
@@ -51,6 +52,15 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
+  bool _canAuth = false;
+
+  Future<void> _init() async {
+    final canAuth = await LocalAuthService.canAuthenticate();
+    if (!mounted) return;
+    setState(() {
+      _canAuth = canAuth;
+    });
+  }
 
   @override
   void initState() {
@@ -64,6 +74,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
         _urlController.text = widget.linkToEdit!.url;
       });
     }
+    _init();
   }
 
   @override
@@ -109,16 +120,21 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // ── Title ───────────────────────────────────────
-              Text('Add Link', style: Theme.of(context).textTheme.titleLarge),
+              Text(
+                'Agregar Link',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
 
               const SizedBox(height: 18),
 
               // ── Link title field ────────────────────────────
-              Text('Title', style: Theme.of(context).textTheme.labelSmall),
+              Text('Título', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _titleController,
-                decoration: const InputDecoration(hintText: 'e.g. Figma board'),
+                decoration: const InputDecoration(
+                  hintText: 'e.g. Tutorial práctico',
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Este campo es obligatorio';
@@ -131,7 +147,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
 
               // ── Description field ───────────────────────────
               Text(
-                'Description (optional)',
+                'Descripción (opcional)',
                 style: Theme.of(context).textTheme.labelSmall,
               ),
               const SizedBox(height: 6),
@@ -139,7 +155,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
                 controller: _descriptionController,
                 maxLines: 3,
                 decoration: const InputDecoration(
-                  hintText: 'What is this link about?',
+                  hintText: '¿De qué trata este enlace?',
                 ),
               ),
 
@@ -153,7 +169,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
                 keyboardType: TextInputType.url,
                 decoration: InputDecoration(
                   hintText: 'https://',
-                  prefixIcon: Icon(Icons.link, color: cs.tertiary, size: 18),
+                  prefixIcon: Icon(Icons.link, color: cs.tertiary, size: 21),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -166,7 +182,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
               const SizedBox(height: 16),
 
               // ── Category selector ───────────────────────────
-              Text('Category', style: Theme.of(context).textTheme.labelSmall),
+              Text('Categoría', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 6),
               DropdownButtonFormField<int>(
                 initialValue: _selectedCategoryId,
@@ -188,15 +204,19 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
               const SizedBox(height: 16),
 
               // ── Visibility toggle ───────────────────────────
-              Text('Visibility', style: Theme.of(context).textTheme.labelSmall),
-              const SizedBox(height: 6),
-              VisibilitySwitch(
-                status: status,
-                onChanged: (v) => setState(() => status = v),
-              ),
+              if (_canAuth) ...[
+                Text(
+                  'Visibilidad',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+                const SizedBox(height: 6),
+                VisibilitySwitch(
+                  status: status,
+                  onChanged: (v) => setState(() => status = v),
+                ),
 
-              const SizedBox(height: 20),
-
+                const SizedBox(height: 20),
+              ],
               // ── Save button ─────────────────────────────────
               ElevatedButton(
                 onPressed: () {

@@ -28,8 +28,11 @@ class _SplashPageState extends State<SplashPage> {
       await DatabaseHelper().init();
 
       // Cargar los datos iniciales
-      final categoryProvider = context.read<CategoryProvider>();
-      final linkProvider = context.read<LinkProvider>();
+      final categoryProvider = Provider.of<CategoryProvider>(
+        context,
+        listen: false,
+      );
+      final linkProvider = Provider.of<LinkProvider>(context, listen: false);
 
       await categoryProvider.loadAll();
       await linkProvider.loadAll();
@@ -39,9 +42,17 @@ class _SplashPageState extends State<SplashPage> {
 
       if (!mounted) return;
 
-      final int initialIndex =
-          context.read<CategorySelectedProvider>().selectedIndex;
-      final initialCategory = categoryProvider.getById(initialIndex) ??
+      final categorySelectedProvider = Provider.of<CategorySelectedProvider>(
+        context,
+        listen: false,
+      );
+      await categorySelectedProvider.init(); // <- esto faltaba
+
+      // ... recién ahora es seguro leer:
+      final int initialIndex = categorySelectedProvider.selectedIndex;
+
+      final initialCategory =
+          categoryProvider.getById(initialIndex) ??
           categoryProvider.getById(DatabaseHelper.defaultCategoryId)!;
 
       Navigator.of(context).pushReplacement(
@@ -52,7 +63,8 @@ class _SplashPageState extends State<SplashPage> {
     } catch (e, st) {
       debugPrint('Error de inicialización: $e\n$st');
       if (mounted) {
-        setState(() => _errorMessage = 'Error al iniciar la app');
+        setState(() => _errorMessage = 'Error al iniciar la app: $e\n$st ');
+        debugPrint('Error de inicialización: $e\n$st');
       }
     }
   }
@@ -63,12 +75,15 @@ class _SplashPageState extends State<SplashPage> {
       backgroundColor: Colors.white,
       body: _errorMessage != null
           ? Center(
-              child: Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
             )
-          : SplashTemplate()
+          : SplashTemplate(),
     );
   }
 }

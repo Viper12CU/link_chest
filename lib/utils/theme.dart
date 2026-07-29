@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 
 class AppTheme {
   // ── Palette ──────────────────────────────────────────────
- static const _background = Color(0xFFFFBB94);      // durazno claro (FFBB94)
-static const _backgroundDark = Color(0xFF4C1D3D);   // ciruela oscuro (4C1D3D)
-static const _surfaceLight = Color(0xFFFFFFFF);     // blanco puro para cards sobre el durazno
-static const _surfaceDark = Color(0xFF852E4E);      // ciruela medio (852E4E)
-static const _primary = Color(0xFFDC586D);          // rosa-magenta (DC586D)
-static const _secondary = Color(0xFFA33757);        // magenta oscuro (A33757)
-static const _accentBlue = Color(0xFFFB9590);       // salmón (FB9590) — ver nota
-static const _accentAmber = Color(0xFFFFBB94);      // durazno (FFBB94)
-static const _textPrimary = Color(0xFF4C1D3D);      // ciruela oscuro (4C1D3D)
-static const _textSecondary = Color(0xFFA33757);    // magenta oscuro (A33757)
+static const _background = Color.fromARGB(255, 227, 228, 228);      // gris claro (CCD0CF)
+static const _backgroundDark = Color(0xFF06141B);   // casi negro azulado (06141B)
+static const _surfaceLight = Color(0xFFFFFFFF);     // blanco puro para cards sobre el gris claro
+static const _surfaceDark = Color(0xFF11212D);      // navy carbón (11212D)
+static const _primary = Color(0xFF253745);          // slate oscuro (253745) — acciones principales, mejor contraste
+static const _secondary = Color(0xFF4A5C6A);        // slate medio (4A5C6A)
+static const _accentBlue = Color(0xFF9BA8AB);       // gris azulado claro (9BA8AB) — bordes, disabled, iconos secundarios
+static const _accentAmber = Color(0xFF9BA8AB);      // mismo gris — no hay tono cálido real en esta paleta
+static const _textPrimary = Color(0xFF06141B);      // casi negro (06141B)
+static const _textSecondary = Color(0xFF4A5C6A);    // slate medio (4A5C6A)
+
 
   // ── Shared shape ─────────────────────────────────────────
   static final _cardShape = RoundedRectangleBorder(
@@ -100,7 +101,7 @@ static const _textSecondary = Color(0xFFA33757);    // magenta oscuro (A33757)
 
       // Drawer
       drawerTheme: const DrawerThemeData(
-        backgroundColor: _surfaceLight,
+        backgroundColor: _background,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.horizontal(right: Radius.circular(24)),

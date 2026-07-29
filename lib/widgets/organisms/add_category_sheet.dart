@@ -203,19 +203,19 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
             children: [
               // ── Title ───────────────────────────────────────
               Text(
-                'New Category',
+                'Nueva Categoría',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
 
               const SizedBox(height: 18),
 
               // ── Name field ──────────────────────────────────
-              Text('Title', style: Theme.of(context).textTheme.labelSmall),
+              Text('Título', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 6),
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
-                  hintText: 'e.g. Reading list',
+                  hintText: 'e.g. Favoritos',
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -228,7 +228,7 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
               const SizedBox(height: 16),
 
               // ── Emoji picker ────────────────────────────────
-              Text('Icon', style: Theme.of(context).textTheme.labelSmall),
+              Text('Ícono', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 8),
               Row(
                 spacing: 15.0,
@@ -286,18 +286,21 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
                     ),
                   ),
                   if (!_emojiShowing)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Seleciona un símbolo",
-                          style: Theme.of(context).textTheme.labelLarge,
-                        ),
-                        Text(
-                          "El emoji representará esta categoría",
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Seleciona un símbolo",
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                          Text(
+                            "El emoji representará esta categoría",
+                            style: Theme.of(context).textTheme.labelSmall!,
+                            maxLines: 2,
+                          ),
+                        ],
+                      ),
                     ),
                 ],
               ),
@@ -400,9 +403,6 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
                     Navigator.pop(context);
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                ),
                 child: Text(
                   widget.isEditing ? 'Guardar Cambios' : 'Crear Categoría',
                 ),
