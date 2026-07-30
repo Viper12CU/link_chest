@@ -1,8 +1,11 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
+import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/local_auth.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:link_chest/widgets/pages/auth_page.dart';
+import 'package:provider/provider.dart';
 
 class CustomAppbar extends StatelessWidget {
   final CategoryModel category;
@@ -52,7 +55,6 @@ class CustomAppbar extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Row(
-                
                 spacing: 12.0,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -77,6 +79,10 @@ class CustomAppbar extends StatelessWidget {
     }
 
     Widget drawerButton() {
+      final VersionProvider versionProvider = Provider.of<VersionProvider>(
+      context,
+    );
+    
       return Container(
         width: 50,
         decoration: BoxDecoration(
@@ -89,10 +95,14 @@ class CustomAppbar extends StatelessWidget {
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
-            icon: Icon(
-              Icons.menu_rounded,
-              size: 28.0,
-              color: getContrastColor(categoryColor),
+            icon: badges.Badge(
+              showBadge: !versionProvider.isNotified,
+              position: badges.BadgePosition.topEnd(top: 0, end: 0),
+              child: Icon(
+                Icons.menu_rounded,
+                size: 28.0,
+                color: getContrastColor(categoryColor),
+              ),
             ),
           ),
         ),

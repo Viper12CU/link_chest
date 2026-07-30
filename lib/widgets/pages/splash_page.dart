@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/widgets/templates/splash_template.dart';
 import 'package:provider/provider.dart';
 import 'package:link_chest/database/database.dart';
@@ -33,9 +34,11 @@ class _SplashPageState extends State<SplashPage> {
         listen: false,
       );
       final linkProvider = Provider.of<LinkProvider>(context, listen: false);
+      final versionProvider = Provider.of<VersionProvider>(context, listen: false);
 
       await categoryProvider.loadAll();
       await linkProvider.loadAll();
+      await versionProvider.init();
 
       // Delay mínimo para que el splash no "parpadee" si la carga es muy rápida
       await Future.delayed(const Duration(milliseconds: 3500));

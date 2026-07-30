@@ -1,8 +1,13 @@
+import 'package:badges/badges.dart' as badges;
+import 'package:badges/badges.dart';
 import 'package:custom_clippers/custom_clippers.dart';
 import 'package:flutter/material.dart';
+import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/widgets/molecules/button_about_dialog.dart';
+import 'package:link_chest/widgets/molecules/updates_modal.dart';
 import 'package:link_chest/widgets/molecules/category_items_group.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
+import 'package:provider/provider.dart';
 
 class CategoryDrawer extends StatefulWidget {
   const CategoryDrawer({super.key});
@@ -14,12 +19,39 @@ class CategoryDrawer extends StatefulWidget {
 class _CategoryDrawerState extends State<CategoryDrawer> {
   @override
   Widget build(BuildContext context) {
+    final VersionProvider versionProvider = Provider.of<VersionProvider>(
+      context,
+    );
+
+
+
     return Drawer(
       child: Column(
         children: [
           header(),
           Expanded(child: CategoryItemsGroup()),
-          ButtonAboutDialog(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ButtonAboutDialog(),
+                IconButton(
+                  onPressed: () => {
+                    Scaffold.of(context).closeDrawer(),
+                    UpdatesModal.show(context: context),
+                  },
+                  icon: badges.Badge(
+                    position: BadgePosition.topStart(),
+                    badgeStyle: BadgeStyle(badgeColor: Colors.red),
+                    showBadge: versionProvider.hasUpdate,
+                    child: Icon(Icons.update_rounded),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
