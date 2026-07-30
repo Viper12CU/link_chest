@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:link_chest/main.dart';
+import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/shared_with_me.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +10,7 @@ import 'package:link_chest/widgets/atoms/custom_appbar.dart';
 import 'package:link_chest/widgets/organisms/add_link_sheet.dart';
 import 'package:link_chest/widgets/organisms/category_drawer.dart';
 import 'package:link_chest/widgets/templates/category_template.dart';
+import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 class CategoryPage extends StatefulWidget {
@@ -21,8 +23,6 @@ class CategoryPage extends StatefulWidget {
 
 class _CategoryPageState extends State<CategoryPage> {
   late StreamSubscription _intentSub;
-
-  
 
   final SystemUiOverlayStyle _drawerOpen = SystemUiOverlayStyle(
     statusBarColor: Color(0xFF253745),
@@ -89,6 +89,9 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     final Color categoryColor = ColorParse().toColor(widget.category.color);
+    final VersionProvider versionProvider = Provider.of<VersionProvider>(
+      context,
+    );
 
     return Scaffold(
       onDrawerChanged: (isOpened) {
@@ -96,6 +99,9 @@ class _CategoryPageState extends State<CategoryPage> {
           SystemChrome.setSystemUIOverlayStyle(_drawerOpen);
         } else {
           SystemChrome.setSystemUIOverlayStyle(_initial);
+          if (!versionProvider.isNotified) {
+            versionProvider.markAsNotified();
+          }
         }
       },
       drawer: CategoryDrawer(),
@@ -114,9 +120,9 @@ class _CategoryPageState extends State<CategoryPage> {
   FloatingActionButton addButton(BuildContext context, Color categoryColor) {
     final ColorScheme cs = Theme.of(context).colorScheme;
     Color getContrastColor(Color background) {
-    final brightness = ThemeData.estimateBrightnessForColor(background);
-    return brightness == Brightness.dark ? cs.onPrimary : cs.onSurface;
-  }
+      final brightness = ThemeData.estimateBrightnessForColor(background);
+      return brightness == Brightness.dark ? cs.onPrimary : cs.onSurface;
+    }
 
     return FloatingActionButton.extended(
       elevation: 4.0,
@@ -131,11 +137,7 @@ class _CategoryPageState extends State<CategoryPage> {
           color: getContrastColor(categoryColor),
         ),
       ),
-      icon: Icon(
-        Icons.add,
-        size: 30.0,
-        color: getContrastColor(categoryColor),
-      ),
+      icon: Icon(Icons.add, size: 30.0, color: getContrastColor(categoryColor)),
     );
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:link_chest/providers/version_provider.dart';
+import 'package:provider/provider.dart';
 
 
 class ButtonAboutDialog extends StatelessWidget {
@@ -7,6 +9,7 @@ class ButtonAboutDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
+    final String currentVersion = Provider.of<VersionProvider>(context).currentVersion;
 
     return GestureDetector(
       onTap: () {
@@ -22,7 +25,7 @@ class ButtonAboutDialog extends StatelessWidget {
             ),
           ),
           applicationName: "Link Chest",
-          applicationVersion: "0.2.1",
+          applicationVersion: currentVersion,
           applicationLegalese:
               "© ${DateTime.now().year} Link Chest. Todos los derechos reservados.",
           children: [
