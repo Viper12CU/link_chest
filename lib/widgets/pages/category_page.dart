@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'package:feature_discovery/feature_discovery.dart';
 import 'package:link_chest/main.dart';
+import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/shared_with_me.dart';
 import 'package:flutter/material.dart';
@@ -77,6 +79,11 @@ class _CategoryPageState extends State<CategoryPage> {
     } catch (e) {
       debugPrint("Error: $e");
     }
+    Provider.of<OnboardingProvider>(context, listen: false).loadStatus().then((_) {
+      if (!mounted) return;
+      Provider.of<OnboardingProvider>(context, listen: false)
+          .startHomeTourIfNeeded(context);
+    });
   }
 
   @override
@@ -92,8 +99,12 @@ class _CategoryPageState extends State<CategoryPage> {
     final VersionProvider versionProvider = Provider.of<VersionProvider>(
       context,
     );
+    final OnboardingProvider onboardingProvider = Provider.of<OnboardingProvider>(
+      context,
+    );
 
     return Scaffold(
+      key: onboardingProvider.scaffoldKey,
       onDrawerChanged: (isOpened) {
         if (isOpened) {
           SystemChrome.setSystemUIOverlayStyle(_drawerOpen);
@@ -117,27 +128,54 @@ class _CategoryPageState extends State<CategoryPage> {
     );
   }
 
-  FloatingActionButton addButton(BuildContext context, Color categoryColor) {
+  Widget addButton(BuildContext context, Color categoryColor) {
     final ColorScheme cs = Theme.of(context).colorScheme;
     Color getContrastColor(Color background) {
       final brightness = ThemeData.estimateBrightnessForColor(background);
       return brightness == Brightness.dark ? cs.onPrimary : cs.onSurface;
     }
+    final OnboardingProvider onboardingProvider = Provider.of<OnboardingProvider>(
+      context,
+    );
 
-    return FloatingActionButton.extended(
-      elevation: 4.0,
-      backgroundColor: categoryColor,
-      onPressed: () {
-        AddLinkSheet.show(context, widget.category);
+    return DescribedFeatureOverlay(
+      onDismiss: () async {
+        return false;
       },
-      tooltip: "Nuevo link",
-      label: Text(
-        "Nuevo link",
-        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-          color: getContrastColor(categoryColor),
+      featureId: OnboardingProvider.stepAddLink,
+      tapTarget: Icon(Icons.add, size: 30.0,),
+      overflowMode: OverflowMode.wrapBackground,
+      onComplete: () async {
+        onboardingProvider.scaffoldKey.currentState?.openDrawer();
+        return true;
+      },
+      title: Text(
+        "Agrega un link",
+        style: Theme.of(context).textTheme.titleLarge!.copyWith(
+          color: Theme.of(context).colorScheme.surface,
         ),
       ),
-      icon: Icon(Icons.add, size: 30.0, color: getContrastColor(categoryColor)),
+      description: Text(
+        "Agrega un nuevo link a la categoría actual.",
+        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+          color: Theme.of(context).colorScheme.surface,
+        ),       
+      ),
+      child: FloatingActionButton.extended(
+        elevation: 4.0,
+        backgroundColor: categoryColor,
+        onPressed: () {
+          AddLinkSheet.show(context, widget.category);
+        },
+        tooltip: "Nuevo link",
+        label: Text(
+          "Nuevo link",
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+            color: getContrastColor(categoryColor),
+          ),
+        ),
+        icon: Icon(Icons.add, size: 30.0, color: getContrastColor(categoryColor)),
+      ),
     );
   }
 }

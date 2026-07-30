@@ -1,7 +1,9 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:badges/badges.dart';
 import 'package:custom_clippers/custom_clippers.dart';
+import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
+import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/widgets/molecules/button_about_dialog.dart';
 import 'package:link_chest/widgets/molecules/updates_modal.dart';
@@ -22,8 +24,6 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
     final VersionProvider versionProvider = Provider.of<VersionProvider>(
       context,
     );
-
-
 
     return Drawer(
       child: Column(
@@ -59,6 +59,8 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
 
   Widget header() {
     final TextTheme textTheme = Theme.of(context).textTheme;
+    final OnboardingProvider onboardingProvider =
+        Provider.of<OnboardingProvider>(context);
 
     return ClipPath(
       clipBehavior: Clip.hardEdge,
@@ -85,7 +87,32 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
               style: textTheme.labelLarge!.copyWith(color: Colors.white),
             ),
             SizedBox(height: 20.0),
-            addCategoryButton(),
+            DescribedFeatureOverlay(
+              overflowMode: OverflowMode.wrapBackground,
+              featureId: OnboardingProvider.stepAddCategory,
+              tapTarget: Icon(Icons.add, size: 30.0),
+              onComplete: () async {
+                onboardingProvider.scaffoldKey.currentState?.closeDrawer();
+
+                return true;
+              },
+              onDismiss: () async {
+                return false;
+              },
+              title: Text(
+                "Agrega una categoría",
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+              ),
+              description: Text(
+                "Crea una nueva categoría para organizar tus links.",
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  color: Theme.of(context).colorScheme.surface,
+                ),
+              ),
+              child: addCategoryButton(),
+            ),
           ],
         ),
       ),

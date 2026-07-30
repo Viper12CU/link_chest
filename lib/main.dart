@@ -1,8 +1,10 @@
+import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/category_selected_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
+import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/utils/theme.dart';
 import 'package:link_chest/widgets/pages/splash_page.dart';
@@ -21,9 +23,10 @@ void main() async {
         ),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => LinkProvider()),
-        ChangeNotifierProvider(create: (_) => VersionProvider())
+        ChangeNotifierProvider(create: (_) => VersionProvider()),
+        ChangeNotifierProvider(create: (_) => OnboardingProvider()),
       ],
-      child: const App(),
+      child: FeatureDiscovery(child: const App()),
     ),
   );
 }

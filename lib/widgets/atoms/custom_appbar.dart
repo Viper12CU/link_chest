@@ -1,6 +1,8 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
+import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/local_auth.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
@@ -31,6 +33,9 @@ class CustomAppbar extends StatelessWidget {
     ];
 
     Expanded title(BuildContext context) {
+      final OnboardingProvider onboardingProvider =
+          Provider.of<OnboardingProvider>(context);
+
       return Expanded(
         child: Container(
           height: double.infinity,
@@ -54,23 +59,45 @@ class CustomAppbar extends StatelessWidget {
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Row(
-                spacing: 12.0,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(category.icon, style: TextStyle(fontSize: 18)),
-                  Flexible(
-                    child: Text(
-                      category.title,
-                      style: Theme.of(context).textTheme.displaySmall!.copyWith(
-                        color: getContrastColor(categoryColor),
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+              child: DescribedFeatureOverlay(
+                featureId: OnboardingProvider.stepVault,
+                tapTarget: Icon(Icons.lock_outline_rounded, size: 30.0),
+                onDismiss: () async {
+                  return false;
+                },
+                onComplete: () async {
+                  onboardingProvider.markHomeTourCompleted();
+                  return true;
+                },
+                title: Text(
+                  "Vault privado",
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.surface,
                   ),
-                ],
+                ),
+                description: Text(
+                  "Manten preionado el titulo de la categoría para acceder a tu vault privado protegido con biometría.",
+                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                ),
+                child: Row(
+                  spacing: 12.0,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(category.icon, style: TextStyle(fontSize: 18)),
+                    Flexible(
+                      child: Text(
+                        category.title,
+                        style: Theme.of(context).textTheme.displaySmall!
+                            .copyWith(color: getContrastColor(categoryColor)),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -80,9 +107,9 @@ class CustomAppbar extends StatelessWidget {
 
     Widget drawerButton() {
       final VersionProvider versionProvider = Provider.of<VersionProvider>(
-      context,
-    );
-    
+        context,
+      );
+
       return Container(
         width: 50,
         decoration: BoxDecoration(
