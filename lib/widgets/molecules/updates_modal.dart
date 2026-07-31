@@ -50,9 +50,7 @@ class UpdatesModal extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          hasUpdate
-                              ? "!Mantente al día¡"
-                              : "Info de actualización",
+                          "Info de actualización",
                           style: theme.textTheme.headlineSmall,
                         ),
                         badge(theme, hasUpdate),
@@ -153,7 +151,7 @@ class UpdatesModal extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text("Instalda", style: theme.textTheme.labelMedium),
+                  Text("Instalada", style: theme.textTheme.labelMedium),
                   Text(
                     "v${versionProvider.currentVersion}",
                     style: theme.textTheme.labelLarge,
@@ -212,7 +210,7 @@ class UpdatesModal extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("Instalda", style: theme.textTheme.labelMedium),
+              Text("Instalada", style: theme.textTheme.labelMedium),
               Text(
                 "v${versionProvider.currentVersion}",
                 style: theme.textTheme.labelLarge,
@@ -222,13 +220,12 @@ class UpdatesModal extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Text("Fecha", style: theme.textTheme.labelMedium),
               Text(
-                "Fecha",
-                style: theme.textTheme.labelMedium,
-              ),
-              Text(
-                versionProvider.latestReleaseDate,
-                style: theme.textTheme.labelLarge
+                versionProvider.latestReleaseDate.isEmpty
+                    ? " - "
+                    : versionProvider.latestReleaseDate,
+                style: theme.textTheme.labelLarge,
               ),
             ],
           ),

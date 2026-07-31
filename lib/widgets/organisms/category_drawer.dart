@@ -59,8 +59,6 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
 
   Widget header() {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final OnboardingProvider onboardingProvider =
-        Provider.of<OnboardingProvider>(context);
 
     return ClipPath(
       clipBehavior: Clip.hardEdge,
@@ -92,7 +90,7 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
               featureId: OnboardingProvider.stepAddCategory,
               tapTarget: Icon(Icons.add, size: 30.0),
               onComplete: () async {
-                onboardingProvider.scaffoldKey.currentState?.closeDrawer();
+                Navigator.pop(context);
 
                 return true;
               },
