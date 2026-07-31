@@ -40,9 +40,14 @@ class _CategoryPageState extends State<CategoryPage> {
     debugPrint('📱 [receive_sharing_intent] $message');
   }
 
+   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+   
+
   @override
   void initState() {
     super.initState();
+    
     SystemChrome.setSystemUIOverlayStyle(_initial);
     try {
       _logSharedFlow('Inicializando listeners de compartido');
@@ -79,10 +84,14 @@ class _CategoryPageState extends State<CategoryPage> {
     } catch (e) {
       debugPrint("Error: $e");
     }
-    Provider.of<OnboardingProvider>(context, listen: false).loadStatus().then((_) {
+    Provider.of<OnboardingProvider>(context, listen: false).loadStatus().then((
+      _,
+    ) {
       if (!mounted) return;
-      Provider.of<OnboardingProvider>(context, listen: false)
-          .startHomeTourIfNeeded(context);
+      Provider.of<OnboardingProvider>(
+        context,
+        listen: false,
+      ).startHomeTourIfNeeded(context);
     });
   }
 
@@ -99,12 +108,11 @@ class _CategoryPageState extends State<CategoryPage> {
     final VersionProvider versionProvider = Provider.of<VersionProvider>(
       context,
     );
-    final OnboardingProvider onboardingProvider = Provider.of<OnboardingProvider>(
-      context,
-    );
+    
+
 
     return Scaffold(
-      key: onboardingProvider.scaffoldKey,
+      key: _scaffoldKey,
       onDrawerChanged: (isOpened) {
         if (isOpened) {
           SystemChrome.setSystemUIOverlayStyle(_drawerOpen);
@@ -134,19 +142,17 @@ class _CategoryPageState extends State<CategoryPage> {
       final brightness = ThemeData.estimateBrightnessForColor(background);
       return brightness == Brightness.dark ? cs.onPrimary : cs.onSurface;
     }
-    final OnboardingProvider onboardingProvider = Provider.of<OnboardingProvider>(
-      context,
-    );
+
 
     return DescribedFeatureOverlay(
       onDismiss: () async {
         return false;
       },
       featureId: OnboardingProvider.stepAddLink,
-      tapTarget: Icon(Icons.add, size: 30.0,),
+      tapTarget: Icon(Icons.add, size: 30.0),
       overflowMode: OverflowMode.wrapBackground,
       onComplete: () async {
-        onboardingProvider.scaffoldKey.currentState?.openDrawer();
+        _scaffoldKey.currentState?.openDrawer();
         return true;
       },
       title: Text(
@@ -159,7 +165,7 @@ class _CategoryPageState extends State<CategoryPage> {
         "Agrega un nuevo link a la categoría actual.",
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
           color: Theme.of(context).colorScheme.surface,
-        ),       
+        ),
       ),
       child: FloatingActionButton.extended(
         elevation: 4.0,
@@ -174,7 +180,11 @@ class _CategoryPageState extends State<CategoryPage> {
             color: getContrastColor(categoryColor),
           ),
         ),
-        icon: Icon(Icons.add, size: 30.0, color: getContrastColor(categoryColor)),
+        icon: Icon(
+          Icons.add,
+          size: 30.0,
+          color: getContrastColor(categoryColor),
+        ),
       ),
     );
   }

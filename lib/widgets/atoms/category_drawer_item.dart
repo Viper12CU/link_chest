@@ -61,16 +61,22 @@ class CategoryDrawerItem extends StatelessWidget {
       AddCategorySheet.show(context, categroyToEdit: category, isEditing: true);
     }
 
+    final ThemeData theme = Theme.of(context);
+
     final List<SlidableAction> actions = [
       SlidableAction(
+        backgroundColor: theme.scaffoldBackgroundColor,
         onPressed: (_) => handleDeleteCategory(category.id),
         icon: Icons.delete,
-        label: "delete",
+        label: "eliminar",
+        foregroundColor: theme.colorScheme.error,
       ),
       SlidableAction(
+        backgroundColor: theme.scaffoldBackgroundColor,
         onPressed: (_) => handleEditCategory(category),
         icon: Icons.edit,
-        label: "edit",
+        label: "editar",
+        foregroundColor: theme.colorScheme.primary,
       ),
     ];
 
@@ -80,7 +86,7 @@ class CategoryDrawerItem extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
           decoration: BoxDecoration(
             color: isSelected
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                ? theme.colorScheme.primary.withOpacity(0.1)
                 : null,
             borderRadius: BorderRadius.circular(12.0),
           ),
@@ -95,7 +101,7 @@ class CategoryDrawerItem extends StatelessWidget {
                     Flexible(
                       child: Text(
                         category.title,
-                        style: Theme.of(context).textTheme.headlineSmall,
+                        style: theme.textTheme.headlineSmall,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
