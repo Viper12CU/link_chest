@@ -79,6 +79,17 @@ class LinkProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteVault() async {
+    try {
+      _dao.deletePrivateLinks();
+      _links.removeWhere((l) => l.status == LinkStatus.private);
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
   /// Llamar después de que CategoryProvider elimine una categoría con reasignación
   void reassignToDefault(int categoryId) {
     _links = _links.map((l) {

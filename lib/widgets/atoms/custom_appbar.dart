@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
-import 'package:link_chest/services/local_auth.dart';
+import 'package:link_chest/services/screen_lock_service.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
-import 'package:link_chest/widgets/pages/auth_page.dart';
 import 'package:provider/provider.dart';
 
 class CustomAppbar extends StatelessWidget {
@@ -46,15 +45,8 @@ class CustomAppbar extends StatelessWidget {
           ),
           child: GestureDetector(
             onLongPress: () async {
-              final bool canAuth = await LocalAuthService.canAuthenticate();
-
               if (context.mounted) {
-                canAuth
-                    ? Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => AuthPage()),
-                      )
-                    : null;
+                ScreenLockService.instance.handleCheck(context);
               }
             },
             child: Padding(
@@ -109,6 +101,10 @@ class CustomAppbar extends StatelessWidget {
       final VersionProvider versionProvider = Provider.of<VersionProvider>(
         context,
       );
+
+      
+
+      
 
       return Container(
         width: 50,

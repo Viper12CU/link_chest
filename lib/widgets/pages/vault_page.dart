@@ -6,6 +6,7 @@ class VaultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
     List<BoxShadow> boxShadow = [
       BoxShadow(
         color: const Color.fromARGB(144, 134, 134, 134),
@@ -20,7 +21,7 @@ class VaultPage extends StatelessWidget {
           height: double.infinity,
           decoration: BoxDecoration(
             boxShadow: boxShadow,
-            color: Colors.redAccent,
+            color: theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(15.0),
           ),
           child: Row(
@@ -47,7 +48,7 @@ class VaultPage extends StatelessWidget {
         width: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15.0),
-          color: Colors.redAccent,
+          color: theme.colorScheme.primary,
           boxShadow: boxShadow,
         ),
         child: Center(
