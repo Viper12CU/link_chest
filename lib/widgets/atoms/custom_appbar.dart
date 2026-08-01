@@ -68,7 +68,7 @@ class CustomAppbar extends StatelessWidget {
                   ),
                 ),
                 description: Text(
-                  "Manten preionado el titulo de la categoría para acceder a tu vault privado protegido con biometría.",
+                  "Manten preionado el titulo de la categoría para acceder a tu vault privado protegido con PIN único y biometria.",
                   style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: Theme.of(context).colorScheme.surface,
                   ),
