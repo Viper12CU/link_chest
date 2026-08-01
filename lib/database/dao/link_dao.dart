@@ -12,17 +12,20 @@ class LinkDao {
   // ─── CREATE ───────────────────────────────────────────────────────────────
 
   int insert(LinkModel link) {
-    _db.execute('''
+    _db.execute(
+      '''
       INSERT INTO ${DatabaseHelper.tableLinks}
         (title, description, url, category_id, status)
       VALUES (?, ?, ?, ?, ?);
-    ''', [
-      link.title,
-      link.description,
-      link.url,
-      link.categoryId,
-      link.status.value,
-    ]);
+    ''',
+      [
+        link.title,
+        link.description,
+        link.url,
+        link.categoryId,
+        link.status.value,
+      ],
+    );
 
     return _db.lastInsertRowId;
   }
@@ -78,35 +81,40 @@ class LinkDao {
   void update(LinkModel link) {
     assert(link.id != null, 'LinkModel must have an id to update');
 
-    _db.execute('''
+    _db.execute(
+      '''
       UPDATE ${DatabaseHelper.tableLinks}
       SET title = ?, description = ?, url = ?, category_id = ?, status = ?
       WHERE id = ?;
-    ''', [
-      link.title,
-      link.description,
-      link.url,
-      link.categoryId,
-      link.status.value,
-      link.id,
-    ]);
+    ''',
+      [
+        link.title,
+        link.description,
+        link.url,
+        link.categoryId,
+        link.status.value,
+        link.id,
+      ],
+    );
   }
 
   void updateStatus(int linkId, LinkStatus status) {
-    _db.execute('''
+    _db.execute(
+      '''
       UPDATE ${DatabaseHelper.tableLinks}
       SET status = ?
       WHERE id = ?;
-    ''', [status.value, linkId]);
+    ''',
+      [status.value, linkId],
+    );
   }
 
   // ─── DELETE ───────────────────────────────────────────────────────────────
 
   void delete(int linkId) {
-    _db.execute(
-      'DELETE FROM ${DatabaseHelper.tableLinks} WHERE id = ?;',
-      [linkId],
-    );
+    _db.execute('DELETE FROM ${DatabaseHelper.tableLinks} WHERE id = ?;', [
+      linkId,
+    ]);
   }
 
   void deleteByCategory(int categoryId) {
@@ -116,14 +124,20 @@ class LinkDao {
     );
   }
 
+  void deletePrivateLinks() {
+    _db.execute('DELETE FROM ${DatabaseHelper.tableLinks} WHERE status = ?;', [
+      LinkStatus.private.value,
+    ]);
+  }
+
   // ─── HELPERS ──────────────────────────────────────────────────────────────
 
   LinkModel _rowToModel(Row row) => LinkModel.fromMap({
-        'id': row['id'],
-        'title': row['title'],
-        'description': row['description'],
-        'url': row['url'],
-        'category_id': row['category_id'],
-        'status': row['status'],
-      });
+    'id': row['id'],
+    'title': row['title'],
+    'description': row['description'],
+    'url': row['url'],
+    'category_id': row['category_id'],
+    'status': row['status'],
+  });
 }

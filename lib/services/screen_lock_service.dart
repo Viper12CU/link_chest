@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screen_lock/flutter_screen_lock.dart';
+import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/services/local_auth.dart';
 import 'package:link_chest/services/pin_manager.dart';
+import 'package:link_chest/widgets/molecules/reset_vault_dialog.dart';
 import 'package:link_chest/widgets/pages/vault_page.dart';
+import 'package:provider/provider.dart';
+import 'package:toastify_flutter/toastify_flutter.dart';
 
 class ScreenLockService {
   static final ScreenLockService _instance = ScreenLockService._internal();
@@ -10,6 +14,7 @@ class ScreenLockService {
   ScreenLockService._internal();
 
   static ScreenLockService get instance => _instance;
+
 
   ScreenLockConfig _configStyles(ThemeData theme) {
     return ScreenLockConfig(
@@ -33,13 +38,29 @@ class ScreenLockService {
       actionButtonConfig: KeyPadButtonConfig(
         buttonStyle: OutlinedButton.styleFrom(
           padding: EdgeInsets.all(0),
-          side: BorderSide.none
-        )
+          side: BorderSide.none,
+        ),
       ),
-      buttonConfig: KeyPadButtonConfig(
-        backgroundColor: Colors.grey[350],
-      )
+      buttonConfig: KeyPadButtonConfig(backgroundColor: Colors.grey[350]),
     );
+  }
+
+  Future<void> _onResetPassword(BuildContext context) async {
+  LinkProvider linkProvider = Provider.of<LinkProvider>(context, listen: false);
+
+    await PinManager.instance.deletePin();
+    await linkProvider.deleteVault();
+
+    if (!context.mounted) return;
+    Navigator.pop(context); // Cierra el diálogo de confirmación
+     ToastifyFlutter.info(
+      context,
+      message: "Vaul restablecido, cree el nuevo PIN de acceso. ",
+      duration: 6,
+      
+    );
+    await _screenLockCreateWidget(context);
+
   }
 
   Future<void> _screenLockWidget(bool canAuth, BuildContext context) {
@@ -87,10 +108,12 @@ class ScreenLockService {
       },
       footer: TextButton(
         onPressed: () {
-          PinManager.instance.deletePin();
-          Navigator.pop(context);
+          ResetVaultDialog.show(
+            context,
+            onConfirmReset: () => _onResetPassword(context),
+          );
         },
-        child: Text("Eliminar PIN (debug)"),
+        child: Text("He olvidado mi contraseña"),
       ),
     );
   }
@@ -107,7 +130,6 @@ class ScreenLockService {
       cancelButton: Icon(Icons.close_rounded, size: 35),
       context: context,
       onConfirmed: (value) {
-        debugPrint("PIN creado: $value");
         PinManager.instance.savePin(value);
         Navigator.of(
           context,
@@ -122,7 +144,7 @@ class ScreenLockService {
     // cancelado por el usuario
     if (!context.mounted) return;
     tienePin
-        ? _screenLockWidget(canAuth, context)
-        : _screenLockCreateWidget(context);
+        ? await _screenLockWidget(canAuth, context)
+        : await _screenLockCreateWidget(context);
   }
 }
