@@ -204,7 +204,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
               const SizedBox(height: 16),
 
               // ── Visibility toggle ───────────────────────────
-              if (_canAuth) ...[
+              
                 Text(
                   'Visibilidad',
                   style: Theme.of(context).textTheme.labelSmall,
@@ -216,7 +216,6 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
                 ),
 
                 const SizedBox(height: 20),
-              ],
               // ── Save button ─────────────────────────────────
               ElevatedButton(
                 onPressed: () {

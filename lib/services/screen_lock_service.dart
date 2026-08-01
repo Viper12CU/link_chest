@@ -15,7 +15,6 @@ class ScreenLockService {
 
   static ScreenLockService get instance => _instance;
 
-
   ScreenLockConfig _configStyles(ThemeData theme) {
     return ScreenLockConfig(
       themeData: theme,
@@ -46,21 +45,22 @@ class ScreenLockService {
   }
 
   Future<void> _onResetPassword(BuildContext context) async {
-  LinkProvider linkProvider = Provider.of<LinkProvider>(context, listen: false);
+    LinkProvider linkProvider = Provider.of<LinkProvider>(
+      context,
+      listen: false,
+    );
 
     await PinManager.instance.deletePin();
     await linkProvider.deleteVault();
 
     if (!context.mounted) return;
     Navigator.pop(context); // Cierra el diálogo de confirmación
-     ToastifyFlutter.info(
+    ToastifyFlutter.info(
       context,
       message: "Vaul restablecido, cree el nuevo PIN de acceso. ",
       duration: 6,
-      
     );
     await _screenLockCreateWidget(context);
-
   }
 
   Future<void> _screenLockWidget(bool canAuth, BuildContext context) {
@@ -93,18 +93,34 @@ class ScreenLockService {
           debugPrint("Autenticación biométrica no disponible");
           return;
         }
-        await LocalAuthService.authenticateWithBiometrics(
+        final success = await LocalAuthService.authenticateWithBiometrics(
           reason: "Accede al vault privado",
         );
+
+        if (success) {
+          if (!context.mounted) return;
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => VaultPage()),
+          );
+        }
       },
       onOpened: () async {
         if (!canAuth) {
           debugPrint("Autenticación biométrica no disponible");
           return;
         }
-        await LocalAuthService.authenticateWithBiometrics(
+        final success = await LocalAuthService.authenticateWithBiometrics(
           reason: "Accede al vault privado",
         );
+
+        if (success) {
+          if (!context.mounted) return;
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => VaultPage()),
+          );
+        }
       },
       footer: TextButton(
         onPressed: () {
