@@ -41,7 +41,7 @@ class VisibilitySwitch extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Text(
-                      'Public',
+                      'Público',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -55,7 +55,7 @@ class VisibilitySwitch extends StatelessWidget {
                 Expanded(
                   child: Center(
                     child: Text(
-                      'Private',
+                      'Privado',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -98,7 +98,7 @@ class VisibilitySwitch extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          status == LinkStatus.private ? 'Private' : 'Public',
+                          status == LinkStatus.private ? 'Privado' : 'Público',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,

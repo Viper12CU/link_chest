@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:link_chest/widgets/atoms/custom_appbar.dart';
+import 'package:link_chest/widgets/atoms/smooth_fab.dart';
 import 'package:link_chest/widgets/organisms/add_link_sheet.dart';
 import 'package:link_chest/widgets/organisms/category_drawer.dart';
 import 'package:link_chest/widgets/templates/category_template.dart';
@@ -25,6 +26,7 @@ class CategoryPage extends StatefulWidget {
 
 class _CategoryPageState extends State<CategoryPage> {
   late StreamSubscription _intentSub;
+  bool _extended = true;
 
   final SystemUiOverlayStyle _drawerOpen = SystemUiOverlayStyle(
     statusBarColor: Color(0xFF253745),
@@ -40,14 +42,16 @@ class _CategoryPageState extends State<CategoryPage> {
     debugPrint('📱 [receive_sharing_intent] $message');
   }
 
-   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
-   
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) setState(() => _extended = false);
+    });
+
     SystemChrome.setSystemUIOverlayStyle(_initial);
     try {
       _logSharedFlow('Inicializando listeners de compartido');
@@ -108,8 +112,6 @@ class _CategoryPageState extends State<CategoryPage> {
     final VersionProvider versionProvider = Provider.of<VersionProvider>(
       context,
     );
-    
-
 
     return Scaffold(
       key: _scaffoldKey,
@@ -143,7 +145,6 @@ class _CategoryPageState extends State<CategoryPage> {
       return brightness == Brightness.dark ? cs.onPrimary : cs.onSurface;
     }
 
-
     return DescribedFeatureOverlay(
       onDismiss: () async {
         return false;
@@ -167,24 +168,15 @@ class _CategoryPageState extends State<CategoryPage> {
           color: Theme.of(context).colorScheme.surface,
         ),
       ),
-      child: FloatingActionButton.extended(
-        elevation: 4.0,
-        backgroundColor: categoryColor,
+      child: SmoothFab(
+        extended: _extended,
         onPressed: () {
           AddLinkSheet.show(context, widget.category);
         },
-        tooltip: "Nuevo link",
-        label: Text(
-          "Nuevo link",
-          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-            color: getContrastColor(categoryColor),
-          ),
-        ),
-        icon: Icon(
-          Icons.add,
-          size: 30.0,
-          color: getContrastColor(categoryColor),
-        ),
+        icon: Icons.add,
+        label: "Nuevo link",
+        backgroundColor: categoryColor,
+        foregroundColor: getContrastColor(categoryColor)
       ),
     );
   }

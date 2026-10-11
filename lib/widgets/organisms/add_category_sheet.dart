@@ -213,6 +213,7 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
               Text('Título', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 6),
               TextFormField(
+                textCapitalization: TextCapitalization.sentences,
                 controller: _titleController,
                 decoration: const InputDecoration(
                   hintText: 'e.g. Favoritos',
