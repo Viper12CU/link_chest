@@ -5,10 +5,9 @@ import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
-import 'package:link_chest/widgets/molecules/button_about_dialog.dart';
-import 'package:link_chest/widgets/molecules/updates_modal.dart';
 import 'package:link_chest/widgets/molecules/category_items_group.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
+import 'package:link_chest/widgets/pages/profile_page.dart';
 import 'package:provider/provider.dart';
 
 class CategoryDrawer extends StatefulWidget {
@@ -30,28 +29,26 @@ class _CategoryDrawerState extends State<CategoryDrawer> {
         children: [
           header(),
           Expanded(child: CategoryItemsGroup()),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ButtonAboutDialog(),
-                IconButton(
-                  onPressed: () => {
-                    Scaffold.of(context).closeDrawer(),
-                    UpdatesModal.show(context: context),
-                  },
-                  icon: badges.Badge(
-                    position: BadgePosition.topStart(),
-                    badgeStyle: BadgeStyle(badgeColor: Colors.red),
-                    showBadge: versionProvider.hasUpdate,
-                    child: Icon(Icons.update_rounded),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.person),
+                    title: const Text('Mi perfil'),
+                    onTap: () {
+                      Scaffold.of(context).closeDrawer();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const ProfilePage(),
+                        ),
+                      );
+                    },
                   ),
-                ),
-              ],
+                  const Divider(height: 1),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );

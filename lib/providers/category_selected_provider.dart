@@ -8,7 +8,6 @@ class CategorySelectedProvider extends ChangeNotifier {
   int get selectedIndex => _selectedIndex;
 
   Future<void> init() async {
-    debugPrint("Iniciando provider");
     await SharedPreferences.getInstance().then((prefs) {
       _selectedIndex = prefs.getInt('selectedCategory') ?? DatabaseHelper.defaultCategoryId;
       notifyListeners();

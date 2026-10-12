@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:link_chest/providers/login_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
+import 'package:link_chest/widgets/pages/login_page.dart';
 import 'package:link_chest/widgets/templates/splash_template.dart';
 import 'package:provider/provider.dart';
 import 'package:link_chest/database/database.dart';
@@ -34,7 +36,14 @@ class _SplashPageState extends State<SplashPage> {
         listen: false,
       );
       final linkProvider = Provider.of<LinkProvider>(context, listen: false);
-      final versionProvider = Provider.of<VersionProvider>(context, listen: false);
+      final versionProvider = Provider.of<VersionProvider>(
+        context,
+        listen: false,
+      );
+      final LoginProvider loginProvider = Provider.of<LoginProvider>(
+        context,
+        listen: false,
+      );
 
       await categoryProvider.loadAll();
       await linkProvider.loadAll();
@@ -49,7 +58,7 @@ class _SplashPageState extends State<SplashPage> {
         context,
         listen: false,
       );
-      await categorySelectedProvider.init(); // <- esto faltaba
+      await categorySelectedProvider.init();
 
       // ... recién ahora es seguro leer:
       final int initialIndex = categorySelectedProvider.selectedIndex;
@@ -60,7 +69,9 @@ class _SplashPageState extends State<SplashPage> {
 
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => CategoryPage(category: initialCategory),
+          builder: (_) => loginProvider.isSession
+              ? CategoryPage(category: initialCategory)
+              : LoginPage()
         ),
       );
     } catch (e, st) {
