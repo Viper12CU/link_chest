@@ -1,9 +1,11 @@
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/category_selected_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
+import 'package:link_chest/providers/login_provider.dart';
 import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/utils/theme.dart';
@@ -14,6 +16,7 @@ final navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   await DatabaseHelper().init();
   runApp(
     MultiProvider(
@@ -21,6 +24,7 @@ void main() async {
         ChangeNotifierProvider(
           create: (_) => CategorySelectedProvider()..init(),
         ),
+        ChangeNotifierProvider(create: (_) => LoginProvider()..init()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => LinkProvider()),
         ChangeNotifierProvider(create: (_) => VersionProvider()),

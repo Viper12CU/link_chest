@@ -131,6 +131,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
               Text('Título', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 6),
               TextFormField(
+                textCapitalization: TextCapitalization.sentences,
                 controller: _titleController,
                 decoration: const InputDecoration(
                   hintText: 'e.g. Tutorial práctico',
@@ -152,6 +153,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
               ),
               const SizedBox(height: 6),
               TextField(
+                textCapitalization: TextCapitalization.sentences,
                 controller: _descriptionController,
                 maxLines: 3,
                 decoration: const InputDecoration(
