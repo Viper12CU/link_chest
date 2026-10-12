@@ -100,7 +100,7 @@ class UpdatesModal extends StatelessWidget {
                             await versionProvider.checkForUpdateManually();
                           } else {
                             final uri = Uri.parse(
-                              "https://viper12cu.github.io/Link-Chest-Release-Web/",
+                              "https://link-chest.vercel.app/download",
                             );
                             if (await canLaunchUrl(uri)) {
                               await launchUrl(

@@ -5,8 +5,7 @@ import 'package:toastify_flutter/toastify_flutter.dart';
 class WebAccessBanner extends StatelessWidget {
   const WebAccessBanner({super.key});
 
-  static const String _webUrl =
-      'https://viper12cu.github.io/Link-Chest-Release-Web/';
+  static const String _webUrl = 'https://link-chest.vercel.app/';
 
   @override
   Widget build(BuildContext context) {
@@ -75,8 +74,6 @@ class WebAccessBanner extends StatelessWidget {
             ],
           ),
         ),
-        
-      
       ],
     );
   }
