@@ -3,7 +3,6 @@ import 'package:badges/badges.dart' as badges;
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/widgets/atoms/profile_item.dart';
 import 'package:link_chest/widgets/molecules/updates_modal.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 class ProfileAplication extends StatelessWidget {
