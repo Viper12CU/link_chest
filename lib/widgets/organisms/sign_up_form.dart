@@ -110,7 +110,12 @@ class _SignUpFormState extends State<SignUpForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // ── Name ─────────────────────────────────────────────────
-          Text('Nombre', style: theme.textTheme.labelSmall),
+          Text(
+            'Nombre',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: _nameController,
@@ -118,12 +123,36 @@ class _SignUpFormState extends State<SignUpForm> {
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.name],
+            style: TextStyle(color: colorScheme.onSecondary),
             decoration: InputDecoration(
+              fillColor: colorScheme.secondary,
+              filled: true,
               hintText: 'Ingresa tu nombre',
+              hintStyle: TextStyle(color: colorScheme.onSecondary),
               prefixIcon: Icon(
                 Icons.person_outline,
-                color: colorScheme.tertiary,
+                color: colorScheme.onSecondary,
                 size: 21,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
               ),
             ),
             validator: _validateName,
@@ -132,19 +161,48 @@ class _SignUpFormState extends State<SignUpForm> {
           const SizedBox(height: 16),
 
           // ── Email ────────────────────────────────────────────────
-          Text('Correo electrónico', style: theme.textTheme.labelSmall),
+          Text(
+            'Correo electrónico',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.email],
+            style: TextStyle(color: colorScheme.onSecondary),
             decoration: InputDecoration(
+              fillColor: colorScheme.secondary,
+              filled: true,
               hintText: 'tu@correo.com',
+              hintStyle: TextStyle(color: colorScheme.onSecondary),
               prefixIcon: Icon(
                 Icons.email_outlined,
-                color: colorScheme.tertiary,
+                color: colorScheme.onSecondary,
                 size: 21,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
               ),
             ),
             validator: _validateEmail,
@@ -153,18 +211,27 @@ class _SignUpFormState extends State<SignUpForm> {
           const SizedBox(height: 16),
 
           // ── Password ─────────────────────────────────────────────
-          Text('Contraseña', style: theme.textTheme.labelSmall),
+          Text(
+            'Contraseña',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: _passwordController,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.next,
             autofillHints: const [AutofillHints.newPassword],
+            style: TextStyle(color: colorScheme.onSecondary),
             decoration: InputDecoration(
+              fillColor: colorScheme.secondary,
+              filled: true,
               hintText: 'Crea una contraseña',
+              hintStyle: TextStyle(color: colorScheme.onSecondary),
               prefixIcon: Icon(
                 Icons.lock_outline,
-                color: colorScheme.tertiary,
+                color: colorScheme.onSecondary,
                 size: 21,
               ),
               suffixIcon: IconButton(
@@ -177,9 +244,29 @@ class _SignUpFormState extends State<SignUpForm> {
                   _obscurePassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: colorScheme.secondary,
+                  color: colorScheme.onSecondary,
                   size: 21,
                 ),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
               ),
             ),
             validator: _validatePassword,
@@ -188,7 +275,12 @@ class _SignUpFormState extends State<SignUpForm> {
           const SizedBox(height: 16),
 
           // ── Confirm password ─────────────────────────────────────
-          Text('Confirmar contraseña', style: theme.textTheme.labelSmall),
+          Text(
+            'Confirmar contraseña',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.onPrimary,
+            ),
+          ),
           const SizedBox(height: 6),
           TextFormField(
             controller: _confirmPasswordController,
@@ -196,11 +288,15 @@ class _SignUpFormState extends State<SignUpForm> {
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.newPassword],
             onFieldSubmitted: (_) => _handleSubmit(),
+            style: TextStyle(color: colorScheme.onSecondary),
             decoration: InputDecoration(
+              fillColor: colorScheme.secondary,
+              filled: true,
               hintText: 'Repite tu contraseña',
+              hintStyle: TextStyle(color: colorScheme.onSecondary),
               prefixIcon: Icon(
                 Icons.lock_outline,
-                color: colorScheme.tertiary,
+                color: colorScheme.onSecondary,
                 size: 21,
               ),
               suffixIcon: IconButton(
@@ -214,9 +310,29 @@ class _SignUpFormState extends State<SignUpForm> {
                   _obscureConfirmPassword
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: colorScheme.secondary,
+                  color: colorScheme.onSecondary,
                   size: 21,
                 ),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: colorScheme.error, width: 1.5),
               ),
             ),
             validator: _validateConfirmPassword,
@@ -226,6 +342,13 @@ class _SignUpFormState extends State<SignUpForm> {
 
           // ── Submit ───────────────────────────────────────────────
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.secondary,
+              foregroundColor: colorScheme.onSecondary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadiusGeometry.circular(24),
+              ),
+            ),
             onPressed: _handleSubmit,
             child: const Text('Crear cuenta'),
           ),
@@ -234,20 +357,41 @@ class _SignUpFormState extends State<SignUpForm> {
 
           Row(
             children: [
-              const Expanded(child: Divider()),
+              Expanded(
+                child: Divider(
+                  color: colorScheme.onPrimary.withValues(alpha: 0.3),
+                ),
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('o', style: theme.textTheme.bodySmall),
+                child: Text(
+                  'o',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onPrimary,
+                  ),
+                ),
               ),
-              const Expanded(child: Divider()),
+              Expanded(
+                child: Divider(
+                  color: colorScheme.onPrimary.withValues(alpha: 0.3),
+                ),
+              ),
             ],
           ),
 
           const SizedBox(height: 16),
 
           // ── Google ───────────────────────────────────────────────
-          OutlinedButton(
+          ElevatedButton(
             onPressed: widget.onGoogleSignUp,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colorScheme.secondary,
+              foregroundColor: colorScheme.onSecondary,
+              shape: RoundedRectangleBorder(
+                side: BorderSide(width: 1.5, color: colorScheme.onSecondary),
+                borderRadius: BorderRadiusGeometry.circular(24),
+              ),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -257,11 +401,14 @@ class _SignUpFormState extends State<SignUpForm> {
                     fontFamily: 'Sora',
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
+                    color: colorScheme.onSecondary,
                   ),
                 ),
                 const SizedBox(width: 10),
-                const Text('Crear cuenta con Google'),
+                Text(
+                  'Crear cuenta con Google',
+                  style: TextStyle(color: colorScheme.onSecondary),
+                ),
               ],
             ),
           ),
