@@ -53,6 +53,26 @@ class _LoginTemplateState extends State<LoginTemplate> {
     }
   }
 
+  /// Transición suave (fade + micro-slide ascendente) para el contenido
+  /// del contenedor y los bloques superior/inferior.
+  Widget _contentTransition(Widget child, Animation<double> animation) {
+    final Animation<double> curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+    );
+
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.04),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
@@ -116,13 +136,13 @@ class _LoginTemplateState extends State<LoginTemplate> {
               );
          case FormSizesType.login:
           return Padding(
-            padding: const EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(28.0),
             child: LoginForm(submit: () {}, onGoogleSignIn: () {}),
           );
          
          case FormSizesType.signUp:
           return Padding(
-            padding: const EdgeInsets.all(18.0),
+            padding: const EdgeInsets.all(28.0),
             child: SignUpForm(submit: () {}, onGoogleSignUp: () {}),
           );
          
@@ -132,34 +152,44 @@ class _LoginTemplateState extends State<LoginTemplate> {
 
     return Column(
       children: [
-        if (_formSizes.type != FormSizesType.initial) ...[
-          Align(
-            alignment: AlignmentGeometry.topLeft,
-            child: TextButton.icon(
-              onPressed: () {
-                handleTap(FormSizesType.initial);
-              },
-              label: Text("Volver", style: theme.textTheme.bodyLarge),
-              icon: Icon(Icons.arrow_back_ios_new_rounded),
-            ),
-          ),
-        ],
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          transitionBuilder: _contentTransition,
+          child: _formSizes.type != FormSizesType.initial
+              ? Align(
+                  alignment: AlignmentGeometry.topLeft,
+                  child: TextButton.icon(
+                    onPressed: () {
+                      handleTap(FormSizesType.initial);
+                    },
+                    label: Text("Volver", style: theme.textTheme.bodyLarge),
+                    icon: Icon(Icons.arrow_back_ios_new_rounded),
+                  ),
+                )
+              : const SizedBox.shrink(key: ValueKey('back')),
+        ),
 
-        if (_formSizes.type == FormSizesType.initial) ...[
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(height: screenHeight * 0.25),
-              Text("Bienvenido a Link Chest", textAlign: TextAlign.center),
-            ],
-          ),
-        ],
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 400),
+          transitionBuilder: _contentTransition,
+          child: _formSizes.type == FormSizesType.initial
+              ? Column(
+                  key: const ValueKey('welcome'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: screenHeight * 0.25),
+                    Text("Bienvenido a Link Chest", textAlign: TextAlign.center),
+                  ],
+                )
+              : const SizedBox.shrink(key: ValueKey('welcome')),
+        ),
 
         Expanded(
           child: Align(
             alignment: AlignmentGeometry.bottomCenter,
             child: AnimatedContainer(
               duration: Duration(milliseconds: 450),
+              curve: Curves.easeOutCubic,
               padding: EdgeInsets.only(bottom: 35),
               width: screenWidth,
               height: screenHeight * _formSizes.primary,
@@ -183,7 +213,31 @@ class _LoginTemplateState extends State<LoginTemplate> {
                   ),
                 ],
               ),
-              child:  Align(alignment: AlignmentGeometry.bottomCenter, child: buildChild(_formSizes.type))
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 400),
+                            transitionBuilder: _contentTransition,
+                            child: KeyedSubtree(
+                              key: ValueKey(_formSizes.type),
+                              child: buildChild(_formSizes.type),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
