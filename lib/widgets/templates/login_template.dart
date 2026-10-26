@@ -24,7 +24,7 @@ class _LoginTemplateState extends State<LoginTemplate> {
         setState(() {
           _formSizes = _formSizes.copyWith(
             type: type,
-            primary: 0.64,
+            primary: 0.62,
             firstShadow: -40,
             secondShadow: -80,
           );
@@ -34,7 +34,7 @@ class _LoginTemplateState extends State<LoginTemplate> {
         setState(() {
           _formSizes = _formSizes.copyWith(
             type: type,
-            primary: 0.8,
+            primary: 0.85,
             firstShadow: -30,
             secondShadow: -60,
           );

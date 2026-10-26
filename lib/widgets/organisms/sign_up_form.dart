@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 /// Formulario de creación de cuenta.
 ///
@@ -101,13 +102,15 @@ class _SignUpFormState extends State<SignUpForm> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
 
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── Name ─────────────────────────────────────────────────
           Text(
@@ -338,19 +341,27 @@ class _SignUpFormState extends State<SignUpForm> {
             validator: _validateConfirmPassword,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
 
           // ── Submit ───────────────────────────────────────────────
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorScheme.secondary,
-              foregroundColor: colorScheme.onSecondary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadiusGeometry.circular(24),
+          Align(
+            alignment: AlignmentGeometry.center,
+            child: SizedBox(
+              width: screenWidth * 0.5,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.secondary,
+                  foregroundColor: colorScheme.onSecondary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadiusGeometry.circular(24),
+                  ),
+                ),
+                onPressed: _handleSubmit,
+                child: Text('Crear cuenta', style: theme.textTheme.bodyLarge!.copyWith(
+                          color: theme.colorScheme.onSecondary,
+                        ),),
               ),
             ),
-            onPressed: _handleSubmit,
-            child: const Text('Crear cuenta'),
           ),
 
           const SizedBox(height: 16),
@@ -395,14 +406,10 @@ class _SignUpFormState extends State<SignUpForm> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'G',
-                  style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSecondary,
-                  ),
+                SvgPicture.asset(
+                  'assets/google.svg',
+                  width: 20,
+                  height: 20,
                 ),
                 const SizedBox(width: 10),
                 Text(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 /// Formulario de inicio de sesión.
 ///
@@ -72,7 +73,6 @@ class _LoginFormState extends State<LoginForm> {
     final colorScheme = theme.colorScheme;
     final double screenWidth = MediaQuery.of(context).size.width;
 
-
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -114,7 +114,10 @@ class _LoginFormState extends State<LoginForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
+                borderSide: BorderSide(
+                  color: colorScheme.onSecondary,
+                  width: 1.5,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -179,7 +182,10 @@ class _LoginFormState extends State<LoginForm> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
+                borderSide: BorderSide(
+                  color: colorScheme.onSecondary,
+                  width: 1.5,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -193,7 +199,7 @@ class _LoginFormState extends State<LoginForm> {
             validator: _validatePassword,
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
 
           // ── Submit ───────────────────────────────────────────────
           Align(
@@ -208,7 +214,12 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                 ),
                 onPressed: _handleSubmit,
-                child: const Text('Iniciar sesión'),
+                child: Text(
+                  'Iniciar sesión',
+                  style: theme.textTheme.bodyLarge!.copyWith(
+                    color: theme.colorScheme.onSecondary,
+                  ),
+                ),
               ),
             ),
           ),
@@ -255,14 +266,10 @@ class _LoginFormState extends State<LoginForm> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'G',
-                  style: TextStyle(
-                    fontFamily: 'Sora',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSecondary,
-                  ),
+                SvgPicture.asset(
+                  'assets/google.svg',
+                  width: 20,
+                  height: 20,
                 ),
                 const SizedBox(width: 10),
                 Text(
