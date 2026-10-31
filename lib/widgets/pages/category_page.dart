@@ -176,7 +176,7 @@ class _CategoryPageState extends State<CategoryPage> {
         icon: Icons.add,
         label: "Nuevo link",
         backgroundColor: categoryColor,
-        foregroundColor: getContrastColor(categoryColor)
+        foregroundColor: getContrastColor(categoryColor),
       ),
     );
   }

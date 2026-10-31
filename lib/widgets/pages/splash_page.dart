@@ -50,7 +50,7 @@ class _SplashPageState extends State<SplashPage> {
       await versionProvider.init();
 
       // Delay mínimo para que el splash no "parpadee" si la carga es muy rápida
-      await Future.delayed(const Duration(milliseconds: 3500));
+      await Future.delayed(const Duration(milliseconds: 3000));
 
       if (!mounted) return;
 
