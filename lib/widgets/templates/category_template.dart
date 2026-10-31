@@ -21,7 +21,9 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
   Widget build(BuildContext context) {
     final LinkProvider linkProvider = Provider.of<LinkProvider>(context);
     final List<LinkModel> links = linkProvider.byCategory(widget.category.id!);
-    final bool isLarge = MediaQuery.of(context).size.width >= 600;
+    final bool isL = MediaQuery.of(context).size.width >= 600;
+    final bool isXL = MediaQuery.of(context).size.width >= 1000;
+
 
     final LinkMenuHandlers menuHandlers = LinkMenuHandlers(context: context);
 
@@ -30,9 +32,9 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
     }
 
     return MasonryGridView.count(
-      crossAxisCount: 1,
-      mainAxisSpacing: 8,
-      crossAxisSpacing: 8,
+      crossAxisCount: isXL ? 3 : isL ? 2 : 1,
+      mainAxisSpacing: 10,
+      crossAxisSpacing: 0,
       padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: links.length,
       itemBuilder: (context, index) {
