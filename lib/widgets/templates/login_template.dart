@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/models/form_sizes.dart';
+import 'package:link_chest/providers/login_provider.dart';
+import 'package:link_chest/utils/shared/navigate_before_login.dart';
+import 'package:link_chest/widgets/atoms/back_button.dart';
+import 'package:link_chest/widgets/molecules/auth_choice_actions.dart';
+import 'package:link_chest/widgets/molecules/welcome_hero.dart';
+import 'package:link_chest/widgets/organisms/curved_auth_panel.dart';
 import 'package:link_chest/widgets/organisms/login_form.dart';
 import 'package:link_chest/widgets/organisms/sign_up_form.dart';
+import 'package:provider/provider.dart';
 
 class LoginTemplate extends StatefulWidget {
   const LoginTemplate({super.key});
@@ -10,233 +17,208 @@ class LoginTemplate extends StatefulWidget {
   State<LoginTemplate> createState() => _LoginTemplateState();
 }
 
-class _LoginTemplateState extends State<LoginTemplate> {
-  FormSizes _formSizes = FormSizes(
-    type: FormSizesType.initial,
-    primary: 0.34,
-    firstShadow: -60,
-    secondShadow: -120,
-  );
+class _LoginTemplateState extends State<LoginTemplate>
+    with SingleTickerProviderStateMixin {
+  static const Duration _animationDuration = Duration(milliseconds: 450);
+  static const Animation<double> _hidden = AlwaysStoppedAnimation(0.0);
 
-  void handleTap(FormSizesType type) {
-    switch (type) {
-      case FormSizesType.login:
-        setState(() {
-          _formSizes = _formSizes.copyWith(
-            type: type,
-            primary: 0.62,
-            firstShadow: -40,
-            secondShadow: -80,
-          );
-        });
-        break;
-      case FormSizesType.signUp:
-        setState(() {
-          _formSizes = _formSizes.copyWith(
-            type: type,
-            primary: 0.85,
-            firstShadow: -30,
-            secondShadow: -60,
-          );
-        });
-        break;
+  late final AnimationController _controller;
+  late final CurvedAnimation _contentIn;
+  late final CurvedAnimation _contentOut;
+  late final Animation<double> _previousOpacity;
 
-      case FormSizesType.initial:
-        setState(() {
-          _formSizes = _formSizes.copyWith(
-            type: type,
-            primary: 0.34,
-            firstShadow: -60,
-            secondShadow: -120,
-          );
-        });
+  // Bloques pre-montados y ocultos por opacidad: sin mount cost en el tap.
+  late final Widget _choiceChild;
+  late final Widget _loginChild;
+  late final Widget _signUpChild;
+
+  FormSizesType _type = FormSizesType.initial;
+  FormSizesType? _previousType;
+  FormSizes _from = FormSizesType.initial.sizes;
+  FormSizes _to = FormSizesType.initial.sizes;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: _animationDuration,
+    )..value = 1.0;
+    _contentIn = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic),
+    );
+    _contentOut = CurvedAnimation(
+      parent: _controller,
+      curve: const Interval(0.0, 0.35, curve: Curves.easeInCubic),
+    );
+    _previousOpacity = ReverseAnimation(_contentOut);
+    _controller.addStatusListener(_handleAnimationStatus);
+
+    _choiceChild = AuthChoiceActions(
+      onLogin: () => handleTap(FormSizesType.login),
+      onSignUp: () => handleTap(FormSizesType.signUp),
+    );
+    _loginChild = Padding(
+      padding: const EdgeInsets.all(28.0),
+      child: LoginForm(submit: () {}, onGoogleSignIn: _signInWithGoogle),
+    );
+    _signUpChild = Padding(
+      padding: const EdgeInsets.all(28.0),
+      child: SignUpForm(submit: () {}, onGoogleSignUp: _signUpWithGoogle),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.removeStatusListener(_handleAnimationStatus);
+    _contentIn.dispose();
+    _contentOut.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed && _previousType != null) {
+      setState(() => _previousType = null);
     }
   }
 
-  /// Transición suave (fade + micro-slide ascendente) para el contenido
-  /// del contenedor y los bloques superior/inferior.
-  Widget _contentTransition(Widget child, Animation<double> animation) {
-    final Animation<double> curved = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-    );
+  void _signInWithGoogle() {
+    Provider.of<LoginProvider>(context, listen: false).signInWithGoogle();
+    navigateBeforeLogin(context);
+  }
 
+  void _signUpWithGoogle() {
+    Provider.of<LoginProvider>(context, listen: false).signUpWithGoogle();
+    navigateBeforeLogin(context);
+  }
+
+  void handleTap(FormSizesType type) {
+    if (type == _type) return;
+
+    final double t = Curves.easeOutCubic.transform(_controller.value);
+    _from = _from.lerpTo(_to, t);
+    _to = type.sizes;
+
+    setState(() {
+      _previousType = _type;
+      _type = type;
+    });
+    _controller.forward(from: 0);
+  }
+
+  Widget _childFor(FormSizesType type) {
+    switch (type) {
+      case FormSizesType.initial:
+        return _choiceChild;
+      case FormSizesType.login:
+        return _loginChild;
+      case FormSizesType.signUp:
+        return _signUpChild;
+    }
+  }
+
+  Animation<double> _contentOpacity(FormSizesType type) {
+    if (type == _type) return _contentIn;
+    if (type == _previousType) return _previousOpacity;
+    return _hidden;
+  }
+
+  bool _isLocked(FormSizesType type) =>
+      _previousType != null || type != _type;
+
+  /// Fade + micro-slide para los bloques superiores (Volver / bienvenida).
+  Widget _contentTransition(Widget child, Animation<double> animation) {
     return FadeTransition(
-      opacity: curved,
+      opacity: animation,
       child: SlideTransition(
         position: Tween<Offset>(
           begin: const Offset(0, 0.04),
           end: Offset.zero,
-        ).animate(curved),
+        ).animate(animation),
         child: child,
+      ),
+    );
+  }
+
+  /// Viewport de altura fija por bloque: su layout no cambia con la animación.
+  Widget _panelViewport(BuildContext context, double primary, Widget child) {
+    final double height =
+        MediaQuery.sizeOf(context).height * primary -
+            CurvedAuthPanel.bottomPadding;
+
+    return SizedBox(
+      height: height,
+      child: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: height),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [child],
+          ),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    final double screenWidth = MediaQuery.of(context).size.width;
-
-    final ThemeData theme = Theme.of(context);
-
-     Widget buildChild(FormSizesType type) {
-     switch (type) {
-       case FormSizesType.initial:
-         return Column(
-                spacing: 15.0,
-              
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  SizedBox(
-                    width: screenWidth * 0.5,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.secondary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadiusGeometry.circular(24),
-                        ),
-                      ),
-                      onPressed: () {
-                        handleTap(FormSizesType.login);
-                      },
-                      child: Text(
-                        "Inicia Sesión",
-                        style: theme.textTheme.bodyLarge!.copyWith(
-                          color: theme.colorScheme.onSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: screenWidth * 0.5,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.secondary,
-                        shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: 2,
-                            color: theme.colorScheme.secondary,
-                          ),
-                          borderRadius: BorderRadiusGeometry.circular(24),
-                        ),
-                      ),
-                      onPressed: () {
-                        handleTap(FormSizesType.signUp);
-                      },
-                      child: Text(
-                        "Crea una cuenta",
-                        style: theme.textTheme.bodyLarge!.copyWith(
-                          color: theme.colorScheme.onSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-         case FormSizesType.login:
-          return Padding(
-            padding: const EdgeInsets.all(28.0),
-            child: LoginForm(submit: () {}, onGoogleSignIn: () {}),
-          );
-         
-         case FormSizesType.signUp:
-          return Padding(
-            padding: const EdgeInsets.all(28.0),
-            child: SignUpForm(submit: () {}, onGoogleSignUp: () {}),
-          );
-         
-       
-     }
-  }
-
     return Column(
       children: [
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
+          duration: _animationDuration,
+          switchInCurve: Curves.easeIn,
+          switchOutCurve: Curves.easeOut,
           transitionBuilder: _contentTransition,
-          child: _formSizes.type != FormSizesType.initial
+          child: _type != FormSizesType.initial
               ? Align(
-                  alignment: AlignmentGeometry.topLeft,
-                  child: TextButton.icon(
-                    onPressed: () {
-                      handleTap(FormSizesType.initial);
-                    },
-                    label: Text("Volver", style: theme.textTheme.bodyLarge),
-                    icon: Icon(Icons.arrow_back_ios_new_rounded),
+                  alignment: Alignment.topLeft,
+                  child: AuthBackButton(
+                    onPressed: () => handleTap(FormSizesType.initial),
                   ),
                 )
               : const SizedBox.shrink(key: ValueKey('back')),
         ),
 
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 400),
+          duration: _animationDuration,
+          switchInCurve: Curves.easeIn,
+          switchOutCurve: Curves.easeOut,
           transitionBuilder: _contentTransition,
-          child: _formSizes.type == FormSizesType.initial
-              ? Column(
-                  key: const ValueKey('welcome'),
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: screenHeight * 0.25),
-                    Text("Bienvenido a Link Chest", textAlign: TextAlign.center),
-                  ],
-                )
+          child: _type == FormSizesType.initial
+              ? const WelcomeHero(key: ValueKey('welcome'))
               : const SizedBox.shrink(key: ValueKey('welcome')),
         ),
 
         Expanded(
           child: Align(
-            alignment: AlignmentGeometry.bottomCenter,
-            child: AnimatedContainer(
-              duration: Duration(milliseconds: 450),
-              curve: Curves.easeOutCubic,
-              padding: EdgeInsets.only(bottom: 35),
-              width: screenWidth,
-              height: screenHeight * _formSizes.primary,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primary,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.elliptical(411, 211),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFDADBDC),
-                    offset: Offset(0, _formSizes.secondShadow),
-                    blurRadius: 0,
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Color(0xFFD0D3D4),
-                    offset: Offset(0, _formSizes.firstShadow),
-                    blurRadius: 0,
-                    spreadRadius: 0,
-                  ),
-                ],
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 400),
-                            transitionBuilder: _contentTransition,
-                            child: KeyedSubtree(
-                              key: ValueKey(_formSizes.type),
-                              child: buildChild(_formSizes.type),
-                            ),
+            alignment: Alignment.bottomCenter,
+            child: CurvedAuthPanel(
+              animation: _controller,
+              from: _from,
+              to: _to,
+              contentMax: FormSizesType.signUp,
+              child: Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  for (final FormSizesType type in FormSizesType.values)
+                    IgnorePointer(
+                      ignoring: _isLocked(type),
+                      child: FadeTransition(
+                        opacity: _contentOpacity(type),
+                        child: KeyedSubtree(
+                          key: ValueKey(type),
+                          child: _panelViewport(
+                            context,
+                            type.primary,
+                            _childFor(type),
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  );
-                },
+                ],
               ),
             ),
           ),
@@ -244,23 +226,4 @@ class _LoginTemplateState extends State<LoginTemplate> {
       ],
     );
   }
-
- 
-}
-
-class TopCurveClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 60);
-    // Curva tipo cúpula: el punto de control sube el centro
-    path.quadraticBezierTo(size.width / 2, -60, size.width, 60);
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

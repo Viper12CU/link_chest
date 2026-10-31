@@ -7,38 +7,25 @@ class LoginProvider extends ChangeNotifier {
   bool get isSession => _isSession;
 
   Future<void> init() async {
-    await SharedPreferences.getInstance().then((prefs) {
-      _isSession = prefs.getBool('isSession') ?? false;
-      notifyListeners();
-    });
+    final prefs = await SharedPreferences.getInstance();
+    _isSession = prefs.getBool('isSession') ?? false;
+    notifyListeners();
   }
 
-  Future<void> signIn() async {
-    await SharedPreferences.getInstance().then((prefs) {
-      _isSession = true;
-      prefs.setBool('isSession', true);
-      notifyListeners();
-    });
+  Future<void> signIn() => _setSession(true);
 
+  Future<void> signUp() => _setSession(true);
+
+  Future<void> signInWithGoogle() => _setSession(true);
+
+  Future<void> signUpWithGoogle() => _setSession(true);
+
+  Future<void> signOut() => _setSession(false);
+
+  Future<void> _setSession(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    _isSession = value;
+    await prefs.setBool('isSession', value);
+    notifyListeners();
   }
-
-  Future<void> signUp() async {
-    await SharedPreferences.getInstance().then((prefs) {
-      _isSession = true;
-      prefs.setBool('isSession', true);
-      notifyListeners();
-    });
-
-  }
-
-
-  Future<void> signOut() async {
-    await SharedPreferences.getInstance().then((prefs) {
-      _isSession = false;
-      prefs.setBool('isSession', false);
-      notifyListeners();
-    });
-
-  }
-  
 }

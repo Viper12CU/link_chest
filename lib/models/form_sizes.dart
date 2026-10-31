@@ -1,29 +1,28 @@
-enum FormSizesType { initial, login, signUp }
+enum FormSizesType {
+  initial(0.34, -60, -120),
+  login(0.62, -40, -80),
+  signUp(0.85, -30, -60);
 
+  const FormSizesType(this.primary, this.firstShadow, this.secondShadow);
+
+  final double primary;
+  final double firstShadow;
+  final double secondShadow;
+
+  FormSizes get sizes => FormSizes(primary, firstShadow, secondShadow);
+}
+
+/// Tamaños de panel interpolables durante una transición.
 class FormSizes {
-  FormSizesType type;
-  double primary;
-  double firstShadow;
-  double secondShadow;
+  final double primary;
+  final double firstShadow;
+  final double secondShadow;
 
-  FormSizes({
-    required this.type,
-    required this.primary,
-    required this.firstShadow,
-    required this.secondShadow,
-  });
+  const FormSizes(this.primary, this.firstShadow, this.secondShadow);
 
-  FormSizes copyWith({
-    FormSizesType? type,
-    double? primary,
-    double? firstShadow,
-    double? secondShadow,
-  }) {
-    return FormSizes(
-      type: type ?? this.type,
-      primary: primary ?? this.primary,
-      firstShadow: firstShadow ?? this.firstShadow,
-      secondShadow: secondShadow ?? this.secondShadow,
-    );
-  }
+  FormSizes lerpTo(FormSizes other, double t) => FormSizes(
+    primary + (other.primary - primary) * t,
+    firstShadow + (other.firstShadow - firstShadow) * t,
+    secondShadow + (other.secondShadow - secondShadow) * t,
+  );
 }
