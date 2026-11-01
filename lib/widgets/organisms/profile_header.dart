@@ -17,7 +17,6 @@ class ProfileHeader extends StatelessWidget {
       spacing: 12,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Avatar de cadena de enlaces (Elemento signature)
         Row(
           spacing: 12.0,
           children: [
