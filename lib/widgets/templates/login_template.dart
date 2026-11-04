@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/models/form_sizes.dart';
-import 'package:link_chest/providers/login_provider.dart';
-import 'package:link_chest/utils/shared/navigate_before_login.dart';
+import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/widgets/atoms/back_button.dart';
 import 'package:link_chest/widgets/molecules/auth_choice_actions.dart';
 import 'package:link_chest/widgets/molecules/welcome_hero.dart';
 import 'package:link_chest/widgets/organisms/curved_auth_panel.dart';
 import 'package:link_chest/widgets/organisms/login_form.dart';
 import 'package:link_chest/widgets/organisms/sign_up_form.dart';
-import 'package:provider/provider.dart';
+import 'package:toastify_flutter/toastify_flutter.dart';
 
 class LoginTemplate extends StatefulWidget {
   const LoginTemplate({super.key});
@@ -61,11 +60,11 @@ class _LoginTemplateState extends State<LoginTemplate>
     );
     _loginChild = Padding(
       padding: const EdgeInsets.all(28.0),
-      child: LoginForm(submit: () {}, onGoogleSignIn: _signInWithGoogle),
+      child: LoginForm(onGoogleSignIn: _signUpWithGoogle),
     );
     _signUpChild = Padding(
       padding: const EdgeInsets.all(28.0),
-      child: SignUpForm(submit: () {}, onGoogleSignUp: _signUpWithGoogle),
+      child: SignUpForm(onGoogleSignUp: _signUpWithGoogle),
     );
   }
 
@@ -84,14 +83,18 @@ class _LoginTemplateState extends State<LoginTemplate>
     }
   }
 
-  void _signInWithGoogle() {
-    Provider.of<LoginProvider>(context, listen: false).signInWithGoogle();
-    navigateBeforeLogin(context);
-  }
+  void _signUpWithGoogle() async {
+    try {
+      // Cargar los datos iniciales
 
-  void _signUpWithGoogle() {
-    Provider.of<LoginProvider>(context, listen: false).signUpWithGoogle();
-    navigateBeforeLogin(context);
+      final user = await AuthService.instance.signInWithGoogle();
+      if (user == null || !mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on AuthFailure catch (e) {
+      if (mounted) {
+        ToastifyFlutter.error(context, message: e.message);
+      }
+    }
   }
 
   void handleTap(FormSizesType type) {

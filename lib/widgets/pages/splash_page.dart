@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:link_chest/providers/login_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
-import 'package:link_chest/widgets/pages/login_page.dart';
+import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/widgets/organisms/auth_gate.dart';
 import 'package:link_chest/widgets/templates/splash_template.dart';
 import 'package:provider/provider.dart';
 import 'package:link_chest/database/database.dart';
@@ -30,6 +30,7 @@ class _SplashPageState extends State<SplashPage> {
     try {
       await DatabaseHelper().init();
 
+      if (!mounted) return;
       // Cargar los datos iniciales
       final categoryProvider = Provider.of<CategoryProvider>(
         context,
@@ -37,10 +38,6 @@ class _SplashPageState extends State<SplashPage> {
       );
       final linkProvider = Provider.of<LinkProvider>(context, listen: false);
       final versionProvider = Provider.of<VersionProvider>(
-        context,
-        listen: false,
-      );
-      final LoginProvider loginProvider = Provider.of<LoginProvider>(
         context,
         listen: false,
       );
@@ -67,11 +64,12 @@ class _SplashPageState extends State<SplashPage> {
           categoryProvider.getById(initialIndex) ??
           categoryProvider.getById(DatabaseHelper.defaultCategoryId)!;
 
+      await AuthService.instance.authStateChanges.first;
+      if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => loginProvider.isSession
-              ? CategoryPage(category: initialCategory)
-              : LoginPage()
+          builder: (_) =>
+              AuthGate(home: CategoryPage(category: initialCategory)),
         ),
       );
     } catch (e, st) {

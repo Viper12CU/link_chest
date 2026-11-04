@@ -1,5 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:link_chest/providers/login_provider.dart';
+import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
 import 'package:link_chest/widgets/molecules/active_sessions.dart';
 import 'package:link_chest/widgets/molecules/profile_aplication.dart';
@@ -8,21 +9,38 @@ import 'package:link_chest/widgets/molecules/profile_stats.dart';
 import 'package:link_chest/widgets/molecules/web_access_banner.dart';
 import 'package:link_chest/widgets/organisms/profile_header.dart';
 import 'package:link_chest/widgets/pages/login_page.dart';
-import 'package:provider/provider.dart';
 
-class ProfileTemplate extends StatelessWidget {
+class ProfileTemplate extends StatefulWidget {
   const ProfileTemplate({super.key});
 
   @override
+  State<ProfileTemplate> createState() => _ProfileTemplateState();
+}
+
+class _ProfileTemplateState extends State<ProfileTemplate> {
+  late final AuthService _authService;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _authService = AuthService.instance;
+  }
+
+
+  @override
   Widget build(BuildContext context) {
+    final User currentUser = _authService.currentUser!;
+
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 25.0),
       child: Column(
         spacing: 24,
         children: [
-          const ProfileHeader(
-            username: 'Nombre de Usuario',
-            email: 'usuario@email.com',
+          ProfileHeader(
+            username: currentUser.displayName ?? 'Usuario',
+            email: currentUser.email ?? 'usuario@email.com',
           ),
           const ProfileStats(),
           const WebAccessBanner(),
@@ -46,11 +64,19 @@ class ProfileTemplate extends StatelessWidget {
                   ConfirmAction(
                     label: "Cerrar sesión",
                     onTap: () {
-                      Provider.of<LoginProvider>(context, listen: false).signOut();
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => LoginPage()),
-                      );
+                      AuthService.instance.signOut();
+
+                      AuthService.instance.authStateChanges.listen((user) {
+                        if (user == null) {
+                          if (context.mounted) {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                builder: (context) => const LoginPage(),
+                              ),
+                            );
+                          }
+                        }
+                      });
                     },
                     style: ConfirmActionStyle.destructive,
                   ),

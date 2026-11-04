@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/utils/validators.dart';
 import 'package:link_chest/widgets/atoms/pill_button.dart';
 import 'package:link_chest/widgets/molecules/auth_field.dart';
 import 'package:link_chest/widgets/molecules/google_button.dart';
 import 'package:link_chest/widgets/molecules/or_divider.dart';
 import 'package:link_chest/widgets/molecules/password_field.dart';
+import 'package:toastify_flutter/toastify_flutter.dart';
 
 /// Formulario de inicio de sesión; [submit] se invoca solo si la validación
 /// de todos los campos pasa.
 class LoginForm extends StatefulWidget {
-  final VoidCallback submit;
   final VoidCallback onGoogleSignIn;
 
-  const LoginForm({
-    super.key,
-    required this.submit,
-    required this.onGoogleSignIn,
-  });
+  const LoginForm({super.key, required this.onGoogleSignIn});
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -26,6 +23,7 @@ class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -34,9 +32,28 @@ class _LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
-  void _handleSubmit() {
-    if (_formKey.currentState!.validate()) {
-      widget.submit();
+  Future<void> _handleSubmit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    try {
+      await AuthService.instance.signInWithEmail(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      // No navegues aquí: AuthGate detecta la sesión y cambia de pantalla solo.
+    } on AuthFailure catch (e) {
+      if (!mounted) return;
+
+      ToastifyFlutter.error(context, message: e.message);
+    } catch (_) {
+      if (!mounted) return;
+      ToastifyFlutter.error(context, message: "Ocurrió un error inesperado.");
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -78,7 +95,7 @@ class _LoginFormState extends State<LoginForm> {
             alignment: Alignment.center,
             child: PillButton(
               label: 'Iniciar sesión',
-              onPressed: _handleSubmit,
+              onPressed: _isLoading ? () {} : _handleSubmit,
               widthFactor: 0.5,
             ),
           ),
@@ -91,7 +108,7 @@ class _LoginFormState extends State<LoginForm> {
 
           GoogleButton(
             label: 'Iniciar sesión con Google',
-            onPressed: widget.onGoogleSignIn,
+            onPressed: _isLoading ? () {} : widget.onGoogleSignIn,
           ),
         ],
       ),
