@@ -50,7 +50,7 @@ class CurvedAuthPanel extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colorScheme.primary,
             borderRadius: BorderRadius.vertical(
-              top: Radius.elliptical(411, 211),
+              top: Radius.elliptical(sizes.topRadiusX, sizes.topRadiusY),
             ),
             boxShadow: [
               BoxShadow(

@@ -11,7 +11,13 @@ class AuthBackButton extends StatelessWidget {
 
     return TextButton.icon(
       onPressed: onPressed,
-      label: Text('Volver', style: theme.textTheme.bodyLarge),
+      style: TextButton.styleFrom(foregroundColor: theme.colorScheme.onPrimary),
+      label: Text(
+        'Volver',
+        style: theme.textTheme.bodyLarge?.copyWith(
+          color: theme.colorScheme.onPrimary,
+        ),
+      ),
       icon: const Icon(Icons.arrow_back_ios_new_rounded),
     );
   }

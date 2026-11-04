@@ -39,10 +39,8 @@ class _LoginTemplateState extends State<LoginTemplate>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: _animationDuration,
-    )..value = 1.0;
+    _controller = AnimationController(vsync: this, duration: _animationDuration)
+      ..value = 1.0;
     _contentIn = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.35, 1.0, curve: Curves.easeOutCubic),
@@ -128,10 +126,9 @@ class _LoginTemplateState extends State<LoginTemplate>
     return _hidden;
   }
 
-  bool _isLocked(FormSizesType type) =>
-      _previousType != null || type != _type;
+  bool _isLocked(FormSizesType type) => _previousType != null || type != _type;
 
-  /// Fade + micro-slide para los bloques superiores (Volver / bienvenida).
+  /// Fade + micro-slide para la bienvenida.
   Widget _contentTransition(Widget child, Animation<double> animation) {
     return FadeTransition(
       opacity: animation,
@@ -146,10 +143,18 @@ class _LoginTemplateState extends State<LoginTemplate>
   }
 
   /// Viewport de altura fija por bloque: su layout no cambia con la animación.
-  Widget _panelViewport(BuildContext context, double primary, Widget child) {
+  Widget _panelViewport(
+    BuildContext context,
+    FormSizesType type,
+    Widget child,
+  ) {
     final double height =
-        MediaQuery.sizeOf(context).height * primary -
-            CurvedAuthPanel.bottomPadding;
+        MediaQuery.sizeOf(context).height * type.primary -
+        CurvedAuthPanel.bottomPadding;
+    final bool isForm = type != FormSizesType.initial;
+    final double verticalInset = isForm
+        ? MediaQuery.paddingOf(context).top + 64
+        : 0;
 
     return SizedBox(
       height: height,
@@ -158,8 +163,15 @@ class _LoginTemplateState extends State<LoginTemplate>
           constraints: BoxConstraints(minHeight: height),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [child],
+            mainAxisAlignment: isForm
+                ? MainAxisAlignment.center
+                : MainAxisAlignment.end,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: verticalInset),
+                child: child,
+              ),
+            ],
           ),
         ),
       ),
@@ -168,34 +180,24 @@ class _LoginTemplateState extends State<LoginTemplate>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        AnimatedSwitcher(
-          duration: _animationDuration,
-          switchInCurve: Curves.easeIn,
-          switchOutCurve: Curves.easeOut,
-          transitionBuilder: _contentTransition,
-          child: _type != FormSizesType.initial
-              ? Align(
-                  alignment: Alignment.topLeft,
-                  child: AuthBackButton(
-                    onPressed: () => handleTap(FormSizesType.initial),
-                  ),
-                )
-              : const SizedBox.shrink(key: ValueKey('back')),
+        Positioned.fill(
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: AnimatedSwitcher(
+              duration: _animationDuration,
+              switchInCurve: Curves.easeIn,
+              switchOutCurve: Curves.easeOut,
+              transitionBuilder: _contentTransition,
+              child: _type == FormSizesType.initial
+                  ? const WelcomeHero(key: ValueKey('welcome'))
+                  : const SizedBox.shrink(key: ValueKey('welcome')),
+            ),
+          ),
         ),
 
-        AnimatedSwitcher(
-          duration: _animationDuration,
-          switchInCurve: Curves.easeIn,
-          switchOutCurve: Curves.easeOut,
-          transitionBuilder: _contentTransition,
-          child: _type == FormSizesType.initial
-              ? const WelcomeHero(key: ValueKey('welcome'))
-              : const SizedBox.shrink(key: ValueKey('welcome')),
-        ),
-
-        Expanded(
+        Positioned.fill(
           child: Align(
             alignment: Alignment.bottomCenter,
             child: CurvedAuthPanel(
@@ -204,23 +206,44 @@ class _LoginTemplateState extends State<LoginTemplate>
               to: _to,
               contentMax: FormSizesType.signUp,
               child: Stack(
-                alignment: Alignment.bottomCenter,
                 children: [
-                  for (final FormSizesType type in FormSizesType.values)
-                    IgnorePointer(
-                      ignoring: _isLocked(type),
-                      child: FadeTransition(
-                        opacity: _contentOpacity(type),
-                        child: KeyedSubtree(
-                          key: ValueKey(type),
-                          child: _panelViewport(
-                            context,
-                            type.primary,
-                            _childFor(type),
+                  Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      for (final FormSizesType type in FormSizesType.values)
+                        IgnorePointer(
+                          ignoring: _isLocked(type),
+                          child: FadeTransition(
+                            opacity: _contentOpacity(type),
+                            child: KeyedSubtree(
+                              key: ValueKey(type),
+                              child: _panelViewport(
+                                context,
+                                type,
+                                _childFor(type),
+                              ),
+                            ),
                           ),
+                        ),
+                    ],
+                  ),
+                  Positioned(
+                    top: MediaQuery.paddingOf(context).top,
+                    left: 0,
+                    child: IgnorePointer(
+                      ignoring:
+                          _type == FormSizesType.initial ||
+                          _previousType != null,
+                      child: AnimatedOpacity(
+                        opacity: _type == FormSizesType.initial ? 0.0 : 1.0,
+                        duration: _animationDuration,
+                        curve: Curves.easeIn,
+                        child: AuthBackButton(
+                          onPressed: () => handleTap(FormSizesType.initial),
                         ),
                       ),
                     ),
+                  ),
                 ],
               ),
             ),
