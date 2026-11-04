@@ -23,7 +23,7 @@ class AuthChoiceActions extends StatelessWidget {
           widthFactor: 0.5,
         ),
         PillButton(
-          label: 'Crea una cuenta',
+          label: 'Registrate gratis',
           onPressed: onSignUp,
           filled: false,
           widthFactor: 0.5,
