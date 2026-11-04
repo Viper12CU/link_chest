@@ -87,10 +87,9 @@ class VerifyEmailTemplate extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: PillButton(
-                      label: isChecking
-                          ? 'Verificando...'
-                          : 'Ya verifiqué mi correo',
+                      label: 'Ya verifiqué mi correo',
                       onPressed: isChecking ? () {} : onCheck,
+                      loading: isChecking,
                     ),
                   ),
                   const SizedBox(height: 12),

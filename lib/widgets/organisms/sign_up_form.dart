@@ -64,8 +64,7 @@ class _SignUpFormState extends State<SignUpForm> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
+      key: _formKey,    
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,6 +126,7 @@ class _SignUpFormState extends State<SignUpForm> {
               label: 'Crear cuenta',
               onPressed: _isLoading ? () {} : _handleSubmit,
               widthFactor: 0.5,
+              loading: _isLoading,
             ),
           ),
 

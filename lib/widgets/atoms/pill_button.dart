@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class PillButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final bool filled;
   final double? widthFactor;
+  final bool loading;
 
   const PillButton({
     super.key,
@@ -12,6 +14,7 @@ class PillButton extends StatelessWidget {
     required this.onPressed,
     this.filled = true,
     this.widthFactor,
+    this.loading = false
   });
 
   @override
@@ -39,7 +42,13 @@ class PillButton extends StatelessWidget {
               ),
             ),
       onPressed: onPressed,
-      child: Text(
+      child: 
+      loading ?
+      LoadingAnimationWidget.waveDots(
+        color: theme.colorScheme.onSecondary,
+        size: 45
+      ) :
+       Text(
         label,
         style: theme.textTheme.bodyLarge!.copyWith(
           color: colorScheme.onSecondary,

@@ -61,7 +61,6 @@ class _LoginFormState extends State<LoginForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +96,7 @@ class _LoginFormState extends State<LoginForm> {
               label: 'Iniciar sesión',
               onPressed: _isLoading ? () {} : _handleSubmit,
               widthFactor: 0.5,
+              loading: _isLoading,
             ),
           ),
 
