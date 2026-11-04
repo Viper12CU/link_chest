@@ -45,7 +45,7 @@ class _SignUpFormState extends State<SignUpForm> {
         displayName: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        sendVerification: false,
+        sendVerification: true,
       );
 
       if (!mounted) return;
