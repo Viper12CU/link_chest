@@ -58,6 +58,15 @@ class AuthService {
 
   bool get isEmailVerified => _auth.currentUser?.emailVerified ?? false;
 
+  /// Indica si la cuenta actual tiene un proveedor de contraseña
+  /// (email/contraseña). Las cuentas solo-Google no pueden cambiar
+  /// la contraseña desde la app.
+  bool get hasPasswordProvider =>
+      _auth.currentUser?.providerData.any(
+        (provider) => provider.providerId == 'password',
+      ) ??
+      false;
+
   /// Stream que emite cada vez que el usuario inicia o cierra sesión.
   /// Ideal para un StreamBuilder que decida qué pantalla mostrar.
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -245,15 +254,22 @@ class AuthService {
   }
 
   /// Elimina la cuenta del usuario actual.
-  /// Si Firebase pide login reciente, lanza AuthFailure con code
-  /// 'requires-recent-login': pide al usuario que vuelva a iniciar sesión
-  /// y reintenta.
-  Future<void> deleteAccount() async {
+  ///
+  /// Si [currentPassword] se indica y la cuenta tiene correo, se reautentica
+  /// antes de borrar para evitar el error 'requires-recent-login'.
+  Future<void> deleteAccount({String? currentPassword}) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw const AuthFailure('No hay una sesión activa.', code: 'no-user');
     }
     try {
+      if (currentPassword != null && user.email != null) {
+        final credential = EmailAuthProvider.credential(
+          email: user.email!,
+          password: currentPassword,
+        );
+        await user.reauthenticateWithCredential(credential);
+      }
       await user.delete();
       if (_googleInitialized) {
         await GoogleSignIn.instance.signOut();
@@ -276,13 +292,19 @@ class AuthService {
       case 'user-disabled':
         return AuthFailure('Esta cuenta ha sido deshabilitada.', code: e.code);
       case 'user-not-found':
-        return AuthFailure('No existe una cuenta con ese correo.', code: e.code);
+        return AuthFailure(
+          'No existe una cuenta con ese correo.',
+          code: e.code,
+        );
       case 'wrong-password':
       case 'invalid-credential':
       case 'invalid-login-credentials':
         return AuthFailure('Correo o contraseña incorrectos.', code: e.code);
       case 'email-already-in-use':
-        return AuthFailure('Ya existe una cuenta con ese correo.', code: e.code);
+        return AuthFailure(
+          'Ya existe una cuenta con ese correo.',
+          code: e.code,
+        );
       case 'weak-password':
         return AuthFailure(
           'La contraseña es muy débil. Usa al menos 6 caracteres.',
