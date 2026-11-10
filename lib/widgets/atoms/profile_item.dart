@@ -6,16 +6,30 @@ class ProfileItem extends StatelessWidget {
   final Widget? widgetLabel;
   final String? textLabel;
   final Widget action;
-  const ProfileItem({super.key, required this.icon, required this.title, this.widgetLabel, this.textLabel, required this.action});
+  final Color? iconColor;
+  final Color? iconBackgroundColor;
+  final Color? titleColor;
+  const ProfileItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.widgetLabel,
+    this.textLabel,
+    required this.action,
+    this.iconColor,
+    this.iconBackgroundColor,
+    this.titleColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-     final ThemeData theme = Theme.of(context);
+    final ThemeData theme = Theme.of(context);
 
-      if(widgetLabel != null && textLabel != null) {
-        throw Exception('ProfileItem: Only one of widgetLabel or textLabel can be provided.');
-      }
-
+    if (widgetLabel != null && textLabel != null) {
+      throw Exception(
+        'ProfileItem: Only one of widgetLabel or textLabel can be provided.',
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
@@ -26,10 +40,10 @@ class ProfileItem extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainer,
+              color: iconBackgroundColor ?? theme.colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(13),
             ),
-            child: Icon(icon, size: 22),
+            child: Icon(icon, size: 22, color: iconColor),
           ),
           const SizedBox(width: 12),
 
@@ -41,12 +55,13 @@ class ProfileItem extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w600,
+                    color: titleColor,
                   ),
                 ),
-                if(textLabel != null) ...[
+                if (textLabel != null) ...[
                   Text(
                     textLabel!,
                     maxLines: 1,
@@ -58,10 +73,7 @@ class ProfileItem extends StatelessWidget {
                     ),
                   ),
                 ],
-                if(widgetLabel != null) ...[
-                  widgetLabel!,
-                ],
-               
+                if (widgetLabel != null) ...[widgetLabel!],
               ],
             ),
           ),

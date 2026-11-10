@@ -40,7 +40,6 @@ class _ProfileExportDataState extends State<ProfileExportData> {
   Future<void> _import() async {
     setState(() => _busy = true);
     try {
-      // merge: solo añade lo que falta, no borra nada.
       final result = await _service.importWithPicker(mode: ImportMode.merge);
       if (!mounted || result == null) return; // canceló
 
