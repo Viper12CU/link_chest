@@ -1,5 +1,3 @@
-import 'package:badges/badges.dart' as badges;
-import 'package:badges/badges.dart';
 import 'package:custom_clippers/custom_clippers.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
@@ -20,39 +18,106 @@ class CategoryDrawer extends StatefulWidget {
 class _CategoryDrawerState extends State<CategoryDrawer> {
   @override
   Widget build(BuildContext context) {
-    final VersionProvider versionProvider = Provider.of<VersionProvider>(
-      context,
-    );
-
     return Drawer(
       child: Column(
         children: [
           header(),
           Expanded(child: CategoryItemsGroup()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading: const Icon(Icons.person),
-                    title: const Text('Mi perfil'),
-                    onTap: () {
-                      Scaffold.of(context).closeDrawer();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const ProfilePage(),
-                        ),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1),
-                ],
-              ),
-            ),
+          profileButton(context),
         ],
       ),
     );
   }
+
+  Column profileButton(BuildContext context) {
+  final colors = Theme.of(context).colorScheme;
+  final textTheme = Theme.of(context).textTheme;
+
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Divider(
+        height: 1,
+        indent: 16,
+        endIndent: 16,
+        color: colors.outlineVariant.withValues(alpha: 0.5),
+      ),
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        child: Material(
+          color: colors.surfaceContainerHighest.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(18),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(18),
+            onTap: () {
+              Scaffold.of(context).closeDrawer();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colors.primary,
+                          colors.primary.withValues(alpha: 0.7),
+                        ],
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.person_rounded,
+                      size: 22,
+                      color: colors.onPrimary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mi perfil',
+                          style: textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Cuenta y ajustes',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: colors.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
 
   Widget header() {
     final TextTheme textTheme = Theme.of(context).textTheme;

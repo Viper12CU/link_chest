@@ -80,6 +80,7 @@ class _LinkCardState extends State<LinkCard> {
                           widget.title,
                           style: textTheme.headlineSmall,
                           overflow: TextOverflow.ellipsis,
+                          maxLines: 3,
                         ),
                       ),
                       if (widget.isLocked) ...[const SizedBox(width: 8)],

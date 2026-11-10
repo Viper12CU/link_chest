@@ -6,6 +6,7 @@ import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
+import 'package:link_chest/widgets/organisms/auth_gate.dart';
 import 'package:link_chest/widgets/pages/category_page.dart';
 import 'package:provider/provider.dart';
 
@@ -130,7 +131,8 @@ class CategoryDrawerItem extends StatelessWidget {
           onSelected?.call();
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(
-              builder: (context) => CategoryPage(category: category),
+              builder: (context) =>
+                  AuthGate(home: CategoryPage(category: category)),
             ),
           );
         },

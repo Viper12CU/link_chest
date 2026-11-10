@@ -46,3 +46,5 @@ app.*.map.json
 
 
 /RELEASE_SETUP.md
+# Android build reports
+android/build/

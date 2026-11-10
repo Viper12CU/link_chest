@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/widgets/templates/login_template.dart';
 
 class LoginPage extends StatelessWidget {
