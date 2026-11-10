@@ -14,32 +14,29 @@ class ProfileHeader extends StatelessWidget {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Column(
-      spacing: 12,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 20,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Row(
-          spacing: 12.0,
+        LinkChainAvatar(letter: username[0]),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            LinkChainAvatar(letter: username[0]),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Text(
+              username,
+              style: textTheme.headlineSmall!.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 8.0,
               children: [
-                
-                Text(
-                  username,
-                  style: textTheme.headlineSmall!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                Row(
-                  spacing: 8.0,
-                  children: [
-                    Icon(Icons.email_outlined, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                    Text(email, style: textTheme.labelLarge!.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),),
-                  ],
-                ),
+                Icon(Icons.email_outlined, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                Text(email, style: textTheme.labelLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),),
               ],
             ),
           ],
