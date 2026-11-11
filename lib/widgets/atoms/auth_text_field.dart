@@ -32,6 +32,7 @@ class AuthTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final double keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return TextFormField(
       controller: controller,
@@ -41,17 +42,19 @@ class AuthTextField extends StatelessWidget {
       autofillHints: autofillHints,
       obscureText: obscureText,
       onFieldSubmitted: onFieldSubmitted,
+      scrollPadding: EdgeInsets.only(
+        left: 20,
+        top: 20,
+        right: 20,
+        bottom: keyboardInset + 20,
+      ),
       style: TextStyle(color: colorScheme.onSecondary),
       decoration: InputDecoration(
         fillColor: colorScheme.secondary,
         filled: true,
         hintText: hintText,
         hintStyle: TextStyle(color: colorScheme.onSecondary),
-        prefixIcon: Icon(
-          prefixIcon,
-          color: colorScheme.onSecondary,
-          size: 21,
-        ),
+        prefixIcon: Icon(prefixIcon, color: colorScheme.onSecondary, size: 21),
         suffixIcon: suffixIcon,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -63,10 +66,7 @@ class AuthTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.onSecondary,
-            width: 1.5,
-          ),
+          borderSide: BorderSide(color: colorScheme.onSecondary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
