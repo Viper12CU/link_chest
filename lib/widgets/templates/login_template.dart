@@ -155,10 +155,15 @@ class _LoginTemplateState extends State<LoginTemplate>
     final double verticalInset = isForm
         ? MediaQuery.paddingOf(context).top + 64
         : 0;
+    final double keyboardInset = isForm
+        ? MediaQuery.viewInsetsOf(context).bottom
+        : 0;
 
     return SizedBox(
       height: height,
       child: SingleChildScrollView(
+        padding: EdgeInsets.only(bottom: keyboardInset),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: height),
           child: Column(
