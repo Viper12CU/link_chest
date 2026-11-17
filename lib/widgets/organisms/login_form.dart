@@ -11,7 +11,7 @@ import 'package:toastify_flutter/toastify_flutter.dart';
 /// Formulario de inicio de sesión; [submit] se invoca solo si la validación
 /// de todos los campos pasa.
 class LoginForm extends StatefulWidget {
-  final VoidCallback onGoogleSignIn;
+  final Future<void> Function() onGoogleSignIn;
 
   const LoginForm({super.key, required this.onGoogleSignIn});
 
@@ -24,6 +24,7 @@ class _LoginFormState extends State<LoginForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -57,6 +58,15 @@ class _LoginFormState extends State<LoginForm> {
     }
   }
 
+  Future<void> _handleGoogle() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      await widget.onGoogleSignIn();
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -85,7 +95,9 @@ class _LoginFormState extends State<LoginForm> {
             validator: validatePassword,
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.password],
-            onFieldSubmitted: (_) => _handleSubmit(),
+            onFieldSubmitted: (_) {
+              if (!_isLoading && !_isGoogleLoading) _handleSubmit();
+            },
           ),
 
           const SizedBox(height: 30),
@@ -94,7 +106,8 @@ class _LoginFormState extends State<LoginForm> {
             alignment: Alignment.center,
             child: PillButton(
               label: 'Iniciar sesión',
-              onPressed: _isLoading ? () {} : _handleSubmit,
+              onPressed:
+                  _isLoading || _isGoogleLoading ? () {} : _handleSubmit,
               widthFactor: 0.5,
               loading: _isLoading,
             ),
@@ -108,7 +121,9 @@ class _LoginFormState extends State<LoginForm> {
 
           GoogleButton(
             label: 'Iniciar sesión con Google',
-            onPressed: _isLoading ? () {} : widget.onGoogleSignIn,
+            onPressed:
+                _isLoading || _isGoogleLoading ? () {} : _handleGoogle,
+            loading: _isGoogleLoading,
           ),
         ],
       ),

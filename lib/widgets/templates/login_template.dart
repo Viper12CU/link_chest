@@ -81,16 +81,21 @@ class _LoginTemplateState extends State<LoginTemplate>
     }
   }
 
-  void _signUpWithGoogle() async {
+  Future<void> _signUpWithGoogle() async {
     try {
-      // Cargar los datos iniciales
-
       final user = await AuthService.instance.signInWithGoogle();
       if (user == null || !mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on AuthFailure catch (e) {
       if (mounted) {
         ToastifyFlutter.error(context, message: e.message);
+      }
+    } catch (_) {
+      if (mounted) {
+        ToastifyFlutter.error(
+          context,
+          message: 'No pudimos iniciar sesión con Google. Inténtalo de nuevo.',
+        );
       }
     }
   }

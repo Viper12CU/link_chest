@@ -11,7 +11,7 @@ import 'package:toastify_flutter/toastify_flutter.dart';
 /// Formulario de registro; [submit] se invoca solo si la validación de todos
 /// los campos pasa.
 class SignUpForm extends StatefulWidget {
-  final VoidCallback onGoogleSignUp;
+  final Future<void> Function() onGoogleSignUp;
 
   const SignUpForm({super.key, required this.onGoogleSignUp});
 
@@ -26,6 +26,7 @@ class _SignUpFormState extends State<SignUpForm> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -58,6 +59,15 @@ class _SignUpFormState extends State<SignUpForm> {
       ToastifyFlutter.error(context, message: "Ocurrió un error inesperado");
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleGoogle() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      await widget.onGoogleSignUp();
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
     }
   }
 
@@ -115,7 +125,9 @@ class _SignUpFormState extends State<SignUpForm> {
                 validateConfirmPassword(value, _passwordController.text),
             textInputAction: TextInputAction.done,
             autofillHints: const [AutofillHints.newPassword],
-            onFieldSubmitted: (_) => _handleSubmit(),
+            onFieldSubmitted: (_) {
+              if (!_isLoading && !_isGoogleLoading) _handleSubmit();
+            },
           ),
 
           const SizedBox(height: 30),
@@ -124,7 +136,8 @@ class _SignUpFormState extends State<SignUpForm> {
             alignment: Alignment.center,
             child: PillButton(
               label: 'Crear cuenta',
-              onPressed: _isLoading ? () {} : _handleSubmit,
+              onPressed:
+                  _isLoading || _isGoogleLoading ? () {} : _handleSubmit,
               widthFactor: 0.5,
               loading: _isLoading,
             ),
@@ -138,7 +151,9 @@ class _SignUpFormState extends State<SignUpForm> {
 
           GoogleButton(
             label: 'Crear cuenta con Google',
-            onPressed: _isLoading ? () {} : widget.onGoogleSignUp,
+            onPressed:
+                _isLoading || _isGoogleLoading ? () {} : _handleGoogle,
+            loading: _isGoogleLoading,
           ),
         ],
       ),
