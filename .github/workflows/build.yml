@@ -58,12 +58,20 @@ jobs:
           echo "storeFile=keystore.jks" >> android/key.properties
         
        #7 Building APK
-      - name: Build APK
-        run: flutter build apk --release
+        - name: Build APK
+          run: |
+            flutter build apk --release \
+              --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+              --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+              --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
 
         #8 Building App Bundle (aab)
-      - name: Build appBundle
-        run: flutter build appbundle
+        - name: Build appBundle
+          run: |
+            flutter build appbundle \
+              --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+              --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+              --dart-define=GOOGLE_SERVER_CLIENT_ID=${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
 
       #   #9 Build IPA ( IOS Build )
       # - name: Build IPA

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/widgets/pages/login_page.dart';
@@ -16,9 +15,11 @@ class AuthGate extends StatefulWidget {
 }
 
 class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
-  User? _user;
+  AppUser? _user;
+  AppUser? _pendingUser;
   bool _initializing = false;
-  StreamSubscription<User?>? _userSubscription;
+  StreamSubscription<AppUser?>? _userSubscription;
+  StreamSubscription<AppUser?>? _pendingSubscription;
 
   @override
   void initState() {
@@ -26,9 +27,13 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     _user = AuthService.instance.currentUser;
+    _pendingUser = AuthService.instance.pendingUser;
     _initializing = _user != null && !_user!.emailVerified;
     _userSubscription = AuthService.instance.userChanges.listen(
       _handleUserChanged,
+    );
+    _pendingSubscription = AuthService.instance.pendingUserChanges.listen(
+      _handlePendingChanged,
     );
 
     if (_initializing) {
@@ -40,6 +45,7 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _userSubscription?.cancel();
+    _pendingSubscription?.cancel();
     super.dispose();
   }
 
@@ -50,15 +56,31 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
     final user = _user;
     if (user != null && !user.emailVerified) {
       unawaited(_refreshVerification(silent: true));
+      return;
+    }
+
+    // Registro pendiente de confirmación: el usuario pudo abrir el enlace del
+    // correo mientras la app estaba en background.
+    if (user == null && _pendingUser != null) {
+      unawaited(_refreshVerification(silent: true));
     }
   }
 
-  void _handleUserChanged(User? user) {
+  void _handleUserChanged(AppUser? user) {
     if (!mounted) return;
 
     setState(() {
       _user = user;
       if (user == null) _initializing = false;
+    });
+  }
+
+  void _handlePendingChanged(AppUser? pending) {
+    if (!mounted) return;
+
+    setState(() {
+      _pendingUser = pending;
+      if (pending == null && _user == null) _initializing = false;
     });
   }
 
@@ -69,17 +91,22 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
   }
 
   Future<bool> _refreshVerification({bool silent = false}) async {
-    final user = AuthService.instance.currentUser;
-    if (user == null) return false;
+    final AuthService service = AuthService.instance;
+    final user = service.currentUser;
+    final pending = service.pendingUser;
+    if (user == null && pending == null) return false;
 
     try {
-      final verified = await AuthService.instance.refreshEmailVerified();
+      final verified = await service.refreshEmailVerified();
       if (mounted) {
-        setState(() => _user = AuthService.instance.currentUser);
+        setState(() {
+          _user = service.currentUser;
+          _pendingUser = service.pendingUser;
+        });
       }
       return verified;
     } on AuthFailure {
-      if (silent) return user.emailVerified;
+      if (silent) return user?.emailVerified ?? false;
       rethrow;
     }
   }
@@ -91,7 +118,18 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
     }
 
     final user = _user;
-    if (user == null) return const LoginPage();
+    if (user == null) {
+      // Registro a la espera de confirmar el correo: Supabase no entrega
+      // sesión hasta que el usuario abre el enlace del correo.
+      final pending = _pendingUser;
+      if (pending != null) {
+        return VerifyEmailPage(
+          email: pending.email ?? 'tu correo',
+          onCheckVerification: () => _refreshVerification(),
+        );
+      }
+      return const LoginPage();
+    }
 
     if (!user.emailVerified) {
       return VerifyEmailPage(

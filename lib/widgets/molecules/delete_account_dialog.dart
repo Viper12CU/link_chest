@@ -27,7 +27,10 @@ class _DeleteAccountDialogState extends State<DeleteAccountDialog> {
   final _formKey = GlobalKey<FormState>();
   final _confirmController = TextEditingController();
   final _passwordController = TextEditingController();
-  final bool _hasPassword = AuthService.instance.hasPasswordProvider;
+
+  /// Las cuentas creadas con Google no tienen contraseña: no se reautentica.
+  bool get _hasPassword => AuthService.instance.hasPasswordProvider;
+
   bool _isSubmitting = false;
 
   String? _validateConfirmWord(String? value) {

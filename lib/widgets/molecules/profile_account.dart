@@ -47,6 +47,7 @@ class ProfileAccount extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
+    // Las cuentas de Google no tienen contraseña que cambiar.
     final bool hasPassword = AuthService.instance.hasPasswordProvider;
 
     return Column(

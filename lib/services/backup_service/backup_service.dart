@@ -90,7 +90,7 @@ class ImportResult {
 }
 
 // ---------------------------------------------------------------------------
-// Modelos del respaldo (independientes de SQLite/Firestore)
+// Modelos del respaldo (independientes del almacenamiento)
 // ---------------------------------------------------------------------------
 
 class BackupCategory {
@@ -290,7 +290,7 @@ class BackupDocument {
 }
 
 // ---------------------------------------------------------------------------
-// Contrato con el almacenamiento (SQLite hoy, Firestore después)
+// Contrato con el almacenamiento (SQLite hoy, otros almacenamientos después)
 // ---------------------------------------------------------------------------
 
 abstract class BackupStore {
