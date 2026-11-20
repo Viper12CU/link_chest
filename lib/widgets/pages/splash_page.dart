@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import 'package:link_chest/widgets/organisms/auth_gate.dart';
 import 'package:link_chest/widgets/templates/splash_template.dart';
 import 'package:provider/provider.dart';
@@ -40,6 +41,12 @@ class _SplashPageState extends State<SplashPage> {
         context,
         listen: false,
       );
+
+      // La descarga del motor notifica a los Providers para recargar.
+      SyncService.instance.onDataChanged = () {
+        categoryProvider.loadAll();
+        linkProvider.loadAll();
+      };
 
       await categoryProvider.loadAll();
       await linkProvider.loadAll();

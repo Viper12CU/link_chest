@@ -6,6 +6,10 @@ import 'package:link_chest/database/models/link_model.dart';
 abstract class CategoryRepository {
   List<CategoryModel> getAll();
   CategoryModel? getById(String id);
+
+  /// Incluye borradas lógicamente; `isPendingSync` indica dirty local.
+  CategoryModel? getByIdIncludingDeleted(String id);
+
   CategoryModel? getDefault();
   String? getDefaultCategoryId();
 
@@ -37,6 +41,9 @@ abstract class LinkRepository {
   List<LinkModel> getByCategory(String categoryId);
   List<LinkModel> getByStatus(LinkStatus status);
   List<LinkModel> search(String query);
+
+  /// Incluye borradas lógicamente; `isPendingSync` indica dirty local.
+  LinkModel? getByIdIncludingDeleted(String id);
 
   /// Crea un link. Lanza [DefaultCategoryNotReadyException] si aún no
   /// existe la categoría por defecto local.

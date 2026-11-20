@@ -71,6 +71,16 @@ class LinkDao {
     return _rowToModel(rows.first);
   }
 
+  /// Incluye filas borradas lógicamente (necesario para sync/down).
+  LinkModel? getByIdIncludingDeleted(String id) {
+    final rows = _db.select(
+      'SELECT * FROM ${DatabaseHelper.tableLinks} WHERE id = ?;',
+      [id],
+    );
+    if (rows.isEmpty) return null;
+    return _rowToModel(rows.first);
+  }
+
   List<LinkModel> getByCategory(String categoryId) {
     final rows = _db.select(
       'SELECT * FROM ${DatabaseHelper.tableLinks} '

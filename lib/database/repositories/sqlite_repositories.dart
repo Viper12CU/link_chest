@@ -20,6 +20,10 @@ class SqliteCategoryRepository implements CategoryRepository {
   CategoryModel? getById(String id) => _dao.getById(id);
 
   @override
+  CategoryModel? getByIdIncludingDeleted(String id) =>
+      _dao.getByIdIncludingDeleted(id);
+
+  @override
   CategoryModel? getDefault() => _dao.getDefault();
 
   @override
@@ -67,6 +71,10 @@ class SqliteLinkRepository implements LinkRepository {
 
   @override
   LinkModel? getById(String id) => _dao.getById(id);
+
+  @override
+  LinkModel? getByIdIncludingDeleted(String id) =>
+      _dao.getByIdIncludingDeleted(id);
 
   @override
   List<LinkModel> getByCategory(String categoryId) =>
