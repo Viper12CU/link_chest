@@ -6,6 +6,7 @@
 import 'package:link_chest/database/database_helper.dart';
 import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/services/backup_service/backup_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:uuid/uuid.dart';
 
@@ -90,6 +91,7 @@ class SqliteBackupStore extends BackupStore {
       'VALUES (?, ?, ?, ?, ?, 0, ?, ?, 1, 1, NULL)',
       [id, userId, category.title, category.icon, category.color, now, now],
     );
+    await SyncService.instance.requestSync();
     return id;
   }
 
@@ -118,6 +120,7 @@ class SqliteBackupStore extends BackupStore {
         ],
       );
     }
+    await SyncService.instance.requestSync();
   }
 
   @override
@@ -142,6 +145,7 @@ class SqliteBackupStore extends BackupStore {
       _db.execute('ROLLBACK;');
       rethrow;
     }
+    await SyncService.instance.requestSync();
   }
 
   @override

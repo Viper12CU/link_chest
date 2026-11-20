@@ -6,6 +6,7 @@ import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:provider/provider.dart';
+import 'package:toastify_flutter/toastify_flutter.dart';
 
 class AddCategorySheet extends StatefulWidget {
   final CategoryModel? categroyToEdit;
@@ -192,6 +193,14 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       }
 
       debugPrint("Error ${categoryProvider.error}");
+      if (categoryProvider.error != null && context.mounted) {
+        ToastifyFlutter.error(
+          context,
+          message: categoryProvider.error!,
+          duration: 4,
+          style: ToastStyle.flat,
+        );
+      }
     }
 
     return Padding(

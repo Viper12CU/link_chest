@@ -4,6 +4,7 @@ import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/widgets/atoms/visibility_switch.dart';
 import 'package:provider/provider.dart';
+import 'package:toastify_flutter/toastify_flutter.dart';
 
 class AddLinkSheet extends StatefulWidget {
   final LinkModel? linkToEdit;
@@ -97,6 +98,15 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
         await linkProvider.update(newLink);
       } else {
         await linkProvider.add(newLink);
+      }
+
+      if (linkProvider.error != null && context.mounted) {
+        ToastifyFlutter.error(
+          context,
+          message: linkProvider.error!,
+          duration: 4,
+          style: ToastStyle.flat,
+        );
       }
     }
 

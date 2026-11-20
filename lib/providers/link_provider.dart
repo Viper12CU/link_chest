@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import '../database/database.dart';
 
 class LinkProvider extends ChangeNotifier {
-  final LinkDao _dao = LinkDao(DatabaseHelper());
+  final LinkRepository _repo = SqliteLinkRepository.withHelper(
+    DatabaseHelper(),
+  );
 
   List<LinkModel> _links = [];
   bool _isLoading = false;
@@ -37,7 +40,7 @@ class LinkProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _links = _dao.getAll();
+      _links = _repo.getAll();
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -49,7 +52,8 @@ class LinkProvider extends ChangeNotifier {
   Future<void> add(LinkModel link) async {
     try {
       final userId = _requireUserId();
-      _dao.insert(link.copyWith(userId: userId));
+      _repo.create(link.copyWith(userId: userId));
+      await SyncService.instance.requestSync();
       await loadAll();
     } catch (e) {
       _error = e.toString();
@@ -59,7 +63,8 @@ class LinkProvider extends ChangeNotifier {
 
   Future<void> update(LinkModel link) async {
     try {
-      _dao.update(link);
+      _repo.update(link);
+      await SyncService.instance.requestSync();
       final index = _links.indexWhere((l) => l.id == link.id);
       if (index != -1) {
         _links[index] = link.copyWith(isPendingSync: true);
@@ -81,7 +86,8 @@ class LinkProvider extends ChangeNotifier {
   Future<void> delete(String? linkId) async {
     if (linkId == null) return;
     try {
-      _dao.delete(linkId);
+      _repo.delete(linkId);
+      await SyncService.instance.requestSync();
       _links.removeWhere((l) => l.id == linkId);
       notifyListeners();
     } catch (e) {
@@ -92,7 +98,8 @@ class LinkProvider extends ChangeNotifier {
 
   Future<void> deleteVault() async {
     try {
-      _dao.deletePrivateLinks();
+      _repo.deletePrivateLinks();
+      await SyncService.instance.requestSync();
       _links.removeWhere((l) => l.status == LinkStatus.private);
       notifyListeners();
     } catch (e) {

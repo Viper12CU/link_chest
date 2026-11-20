@@ -3,3 +3,5 @@ export 'models/category_model.dart';
 export 'models/link_model.dart';
 export 'dao/category_dao.dart';
 export 'dao/link_dao.dart';
+export 'repositories/repositories.dart';
+export 'repositories/sqlite_repositories.dart';
