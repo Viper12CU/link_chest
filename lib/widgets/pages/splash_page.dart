@@ -31,7 +31,6 @@ class _SplashPageState extends State<SplashPage> {
       await DatabaseHelper().init();
 
       if (!mounted) return;
-      // Cargar los datos iniciales
       final categoryProvider = Provider.of<CategoryProvider>(
         context,
         listen: false,
@@ -46,7 +45,6 @@ class _SplashPageState extends State<SplashPage> {
       await linkProvider.loadAll();
       await versionProvider.init();
 
-      // Delay mínimo para que el splash no "parpadee" si la carga es muy rápida
       await Future.delayed(const Duration(milliseconds: 3000));
 
       if (!mounted) return;
@@ -57,26 +55,29 @@ class _SplashPageState extends State<SplashPage> {
       );
       await categorySelectedProvider.init();
 
-      // ... recién ahora es seguro leer:
-      final int initialIndex = categorySelectedProvider.selectedIndex;
-
-      final initialCategory =
-          categoryProvider.getById(initialIndex) ??
-          categoryProvider.getById(DatabaseHelper.defaultCategoryId)!;
+      final String? selectedId = categorySelectedProvider.selectedId;
+      final CategoryModel? initialCategory =
+          (selectedId != null ? categoryProvider.getById(selectedId) : null) ??
+          categoryProvider.defaultCategory ??
+          categoryProvider.categories.firstOrNull;
 
       await AuthService.instance.authStateChanges.first;
       if (!mounted) return;
+
+      // Sin categorías locales aún: AuthGate decide (login / espera de sync).
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) =>
-              AuthGate(home: CategoryPage(category: initialCategory)),
+          builder: (_) => AuthGate(
+            home: initialCategory != null
+                ? CategoryPage(category: initialCategory)
+                : const _WaitingSyncHome(),
+          ),
         ),
       );
     } catch (e, st) {
       debugPrint('Error de inicialización: $e\n$st');
       if (mounted) {
         setState(() => _errorMessage = 'Error al iniciar la app: $e\n$st ');
-        debugPrint('Error de inicialización: $e\n$st');
       }
     }
   }
@@ -96,6 +97,44 @@ class _SplashPageState extends State<SplashPage> {
               ),
             )
           : SplashTemplate(),
+    );
+  }
+}
+
+/// Placeholder hasta que la primera sincronización traiga datos.
+/// (La pantalla de preparación de cuenta queda fuera de este plan.)
+class _WaitingSyncHome extends StatelessWidget {
+  const _WaitingSyncHome();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                'Preparando tus datos…',
+                style: theme.textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'La primera sincronización los cargará en este dispositivo.',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

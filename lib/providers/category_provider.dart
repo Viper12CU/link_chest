@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:link_chest/services/auth_service.dart';
 import '../database/database.dart';
 
 class CategoryProvider extends ChangeNotifier {
@@ -12,12 +13,28 @@ class CategoryProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Excluye "Ninguna" para mostrar en la UI de gestión
-  List<CategoryModel> get manageable => _categories
-      .where((c) => c.id != DatabaseHelper.defaultCategoryId)
-      .toList();
+  /// Excluye la categoría por defecto para la UI de gestión.
+  List<CategoryModel> get manageable =>
+      _categories.where((c) => !c.isDefault).toList();
 
-  CategoryModel? getById(int categoryId) {
+  String? get defaultCategoryId => _dao.getDefaultCategoryId();
+
+  CategoryModel? get defaultCategory {
+    for (final c in _categories) {
+      if (c.isDefault) return c;
+    }
+    return _dao.getDefault();
+  }
+
+  String _requireUserId() {
+    final userId = AuthService.instance.currentUser?.id;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('No hay sesión activa para guardar datos.');
+    }
+    return userId;
+  }
+
+  CategoryModel? getById(String categoryId) {
     try {
       return _dao.getById(categoryId);
     } catch (e) {
@@ -44,9 +61,12 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<void> add(CategoryModel category) async {
     try {
-      final id = _dao.insert(category);
-      _categories.add(category.copyWith(id: id));
-      notifyListeners();
+      final userId = _requireUserId();
+      final id = _dao.insert(category.copyWith(userId: userId));
+      await loadAll();
+      // id ya está en loadAll; mantener notify por si acaso
+      final idx = _categories.indexWhere((c) => c.id == id);
+      if (idx != -1) notifyListeners();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -58,7 +78,10 @@ class CategoryProvider extends ChangeNotifier {
       _dao.update(category);
       final index = _categories.indexWhere((c) => c.id == category.id);
       if (index != -1) {
-        _categories[index] = category;
+        _categories[index] = category.copyWith(
+          isPendingSync: true,
+          version: category.version + 1,
+        );
         notifyListeners();
       }
     } catch (e) {
@@ -67,23 +90,8 @@ class CategoryProvider extends ChangeNotifier {
     }
   }
 
-
-  Future<void> updateDefault(CategoryModel category) async {
-  try {
-    _dao.updateDefault(category.copyWith(id: DatabaseHelper.defaultCategoryId));
-    final index = _categories.indexWhere((c) => c.id == DatabaseHelper.defaultCategoryId);
-    if (index != -1) {
-      _categories[index] = category.copyWith(id: DatabaseHelper.defaultCategoryId);
-      notifyListeners();
-    }
-  } catch (e) {
-    _error = e.toString();
-    notifyListeners();
-  }
-}
-
-  /// Elimina la categoría y mueve sus links a "Ninguna"
-  Future<void> deleteAndReassign(int categoryId) async {
+  /// Elimina la categoría y mueve sus links a la por defecto
+  Future<void> deleteAndReassign(String categoryId) async {
     try {
       _dao.deleteAndReassignLinks(categoryId);
       _categories.removeWhere((c) => c.id == categoryId);
@@ -95,7 +103,7 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   /// Elimina la categoría junto con todos sus links
-  Future<void> deleteWithLinks(int categoryId) async {
+  Future<void> deleteWithLinks(String categoryId) async {
     try {
       _dao.deleteWithAllLinks(categoryId);
       _categories.removeWhere((c) => c.id == categoryId);

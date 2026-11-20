@@ -1,26 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:link_chest/database/database_helper.dart' show DatabaseHelper;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CategorySelectedProvider extends ChangeNotifier {
-  int _selectedIndex = DatabaseHelper.defaultCategoryId;
+  static const _prefsKey = 'selectedCategory';
 
-  int get selectedIndex => _selectedIndex;
+  String? _selectedId;
+
+  /// ID de la categoría seleccionada; null = aún no hay (o no hay default).
+  String? get selectedId => _selectedId;
+
+  /// Compatibilidad con UIs que aún esperan un índice numérico no.
+  String? get selectedIndex => _selectedId;
 
   Future<void> init() async {
-    await SharedPreferences.getInstance().then((prefs) {
-      _selectedIndex = prefs.getInt('selectedCategory') ?? DatabaseHelper.defaultCategoryId;
-      notifyListeners();
-    });
+    final prefs = await SharedPreferences.getInstance();
+    // v1 guardaba int; v2 guarda String (UUID). Si es int viejo, se ignora.
+    _selectedId = prefs.getString(_prefsKey);
+    notifyListeners();
   }
 
-  void select(int index) async {
-  final prefs = await SharedPreferences.getInstance();
+  void select(String? categoryId) async {
+    if (_selectedId == categoryId) return;
 
-    if (_selectedIndex == index) return;
-
-    _selectedIndex = index;
-    prefs.setInt('selectedCategory', index);
+    _selectedId = categoryId;
+    final prefs = await SharedPreferences.getInstance();
+    if (categoryId == null) {
+      await prefs.remove(_prefsKey);
+    } else {
+      await prefs.setString(_prefsKey, categoryId);
+    }
     notifyListeners();
   }
 }

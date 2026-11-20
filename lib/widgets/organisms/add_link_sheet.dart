@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
-import 'package:link_chest/services/local_auth.dart';
 import 'package:link_chest/widgets/atoms/visibility_switch.dart';
 import 'package:provider/provider.dart';
 
@@ -48,19 +47,10 @@ class AddLinkSheet extends StatefulWidget {
 class _AddLinkSheetState extends State<AddLinkSheet> {
   final _formKey = GlobalKey<FormState>();
   LinkStatus status = LinkStatus.public;
-  int? _selectedCategoryId;
+  String? _selectedCategoryId;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
-  bool _canAuth = false;
-
-  Future<void> _init() async {
-    final canAuth = await LocalAuthService.canAuthenticate();
-    if (!mounted) return;
-    setState(() {
-      _canAuth = canAuth;
-    });
-  }
 
   @override
   void initState() {
@@ -74,7 +64,6 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
         _urlController.text = widget.linkToEdit!.url;
       });
     }
-    _init();
   }
 
   @override
@@ -91,13 +80,17 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
     );
 
     void handlerSubmit() async {
+      final now = DateTime.now().toUtc().toIso8601String();
       final newLink = LinkModel(
         id: widget.linkToEdit?.id,
+        userId: widget.linkToEdit?.userId ?? '',
         title: _titleController.text,
         description: _descriptionController.text,
         url: _urlController.text,
-        categoryId: _selectedCategoryId ?? selectedCategory.id!,
+        categoryId: _selectedCategoryId ?? selectedCategory.id ?? '',
         status: status,
+        createdAt: widget.linkToEdit?.createdAt ?? now,
+        updatedAt: now,
       );
 
       if (widget.isEditing && !widget.isShared) {
@@ -186,7 +179,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
               // ── Category selector ───────────────────────────
               Text('Categoría', style: Theme.of(context).textTheme.labelSmall),
               const SizedBox(height: 6),
-              DropdownButtonFormField<int>(
+              DropdownButtonFormField<String>(
                 initialValue: _selectedCategoryId,
                 hint: Text(widget.initialCategory.title),
                 items: categorys

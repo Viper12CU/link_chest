@@ -52,7 +52,10 @@ class _VaultTemplateState extends State<VaultTemplate> {
           onLock: () => menuHandlers.handleLock(link),
           onDelete: () => menuHandlers.handleDelete(link.id),
           onMoveTo: (category) => menuHandlers.handleMoveTo(link.id, category),
-          onEdit: () => menuHandlers.handleEdit(link, categoryProvider.getById(link.categoryId)!),
+          onEdit: () {
+            final cat = categoryProvider.getById(link.categoryId);
+            if (cat != null) menuHandlers.handleEdit(link, cat);
+          },
         );
       },
     );

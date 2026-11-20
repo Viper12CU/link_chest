@@ -29,9 +29,9 @@ class _CategoryItemsGroupState extends State<CategoryItemsGroup> {
       itemCount: categorys.length,
       itemBuilder: (context, index) => CategoryDrawerItem(
         category: categorys[index],
-        isSelected: provider.selectedIndex == categorys[index].id!,
+        isSelected: provider.selectedId == categorys[index].id,
         onSelected: () {
-          provider.select(categorys[index].id!);
+          provider.select(categorys[index].id);
         },
       ),
     );

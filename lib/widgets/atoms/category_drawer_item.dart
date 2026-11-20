@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
@@ -8,6 +7,7 @@ import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
 import 'package:link_chest/widgets/organisms/auth_gate.dart';
 import 'package:link_chest/widgets/pages/category_page.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
 
 class CategoryDrawerItem extends StatelessWidget {
@@ -17,7 +17,6 @@ class CategoryDrawerItem extends StatelessWidget {
 
   const CategoryDrawerItem({
     super.key,
-
     this.isSelected = false,
     this.onSelected,
     required this.category,
@@ -29,9 +28,10 @@ class CategoryDrawerItem extends StatelessWidget {
       context,
     );
     final LinkProvider linkProvider = Provider.of<LinkProvider>(context);
-    final List<LinkModel> links = linkProvider.byCategory(category.id!);
+    final List<LinkModel> links = linkProvider.byCategory(category.id ?? '');
 
-    void handleDeleteCategory(int? categoryId) {
+    void handleDeleteCategory(String? categoryId) {
+      if (categoryId == null) return;
       ConfirmDialog.show(
         context: context,
         title: '¿Eliminar categoría?',
@@ -42,16 +42,16 @@ class CategoryDrawerItem extends StatelessWidget {
             label: 'Eliminar y Reasignar',
             style: ConfirmActionStyle.destructive,
             onTap: () async {
-              await categoryProvider.deleteAndReassign(categoryId!);
-              linkProvider.reassignToDefault(categoryId);
+              await categoryProvider.deleteAndReassign(categoryId);
+              await linkProvider.reloadAfterCategoryChange();
             },
           ),
           ConfirmAction(
             label: 'Eliminar Completamente',
             style: ConfirmActionStyle.destructive,
             onTap: () async {
-              await categoryProvider.deleteWithLinks(categoryId!);
-              linkProvider.removeByCategory(categoryId);
+              await categoryProvider.deleteWithLinks(categoryId);
+              await linkProvider.reloadAfterCategoryChange();
             },
           ),
         ],
@@ -139,16 +139,17 @@ class CategoryDrawerItem extends StatelessWidget {
       );
     }
 
-    return category.id == DatabaseHelper.defaultCategoryId
-        ? inkWellWidget()
-        : Slidable(
-            startActionPane: ActionPane(
-              motion: const DrawerMotion(),
-              children: category.id == DatabaseHelper.defaultCategoryId
-                  ? []
-                  : actions,
-            ),
-            child: inkWellWidget(),
-          );
+    // La categoría por defecto no se edita ni se borra.
+    if (category.isDefault) {
+      return inkWellWidget();
+    }
+
+    return Slidable(
+      startActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        children: actions,
+      ),
+      child: inkWellWidget(),
+    );
   }
 }

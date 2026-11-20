@@ -40,7 +40,7 @@ class LinkMenuHandlers {
     await linkProvider.toggleStatus(link);
   }
 
-  void handleDelete(int? linkId) async {
+  void handleDelete(String? linkId) async {
     ConfirmDialog.show(
       context: context,
       title: '¿Eliminar link?',
@@ -55,7 +55,7 @@ class LinkMenuHandlers {
     );
   }
 
-  void handleMoveTo(int? link, int? newCategory) async {
+  void handleMoveTo(String? link, String? newCategory) async {
     await linkProvider.changeCategory(link, newCategory);
   }
 

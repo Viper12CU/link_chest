@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/database/database_helper.dart';
+import 'package:link_chest/providers/category_provider.dart';
+import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/services/backup_service/backup_service.dart';
 import 'package:link_chest/services/backup_service/sqlite_backup_store.dart';
 import 'package:link_chest/widgets/atoms/profile_item.dart';
+import 'package:provider/provider.dart';
 import 'package:toastify_flutter/toastify_flutter.dart';
 
 class ProfileExportData extends StatefulWidget {
@@ -40,12 +43,14 @@ class _ProfileExportDataState extends State<ProfileExportData> {
   Future<void> _import() async {
     setState(() => _busy = true);
     try {
+      final cat = context.read<CategoryProvider>();
+      final lnk = context.read<LinkProvider>();
       final result = await _service.importWithPicker(mode: ImportMode.merge);
       if (!mounted || result == null) return; // canceló
 
-      // Recarga tus Providers para que la UI vea los datos nuevos:
-      // context.read<CategoryProvider>().loadCategories();
-      // context.read<LinkProvider>().loadLinks();
+      await cat.loadAll();
+      await lnk.loadAll();
+      if (!mounted) return;
 
       var message = result.linksAdded == 0
           ? 'No había links nuevos para importar'

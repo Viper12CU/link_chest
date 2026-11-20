@@ -173,11 +173,16 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
     void handlerSubmit() async {
       final colorStr =
           '#${_selectedColor.toARGB32().toRadixString(16).padLeft(8, '0')}';
+      final now = DateTime.now().toUtc().toIso8601String();
       final category = CategoryModel(
         id: widget.categroyToEdit?.id,
+        userId: widget.categroyToEdit?.userId ?? '',
         title: _titleController.text,
         icon: _selectedEmoji,
         color: colorStr,
+        isDefault: widget.categroyToEdit?.isDefault ?? false,
+        createdAt: widget.categroyToEdit?.createdAt ?? now,
+        updatedAt: now,
       );
 
       if (widget.isEditing) {
