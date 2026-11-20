@@ -88,26 +88,32 @@ class SyncService extends ChangeNotifier {
 
   // ─── CICLO DE VIDA ────────────────────────────────────────────────────────
 
-  /// Llama el AuthGate al detectar sesión verificada.
-  Future<void> start(String userId) async {
+  /// Cambia de usuario en `sync_state`. Si es otro, vacía tablas y estado.
+  /// Devuelve `true` si limpió. Sin red: utilizable en tests.
+  bool prepareUser(String userId) {
     final previous = _helper.getSyncState('current_user_id');
-    if (previous != null && previous != userId) {
-      // Usuario distinto: vacía tablas locales y estado de sync.
+    final changed = previous != null && previous != userId;
+    if (changed) {
       _helper.clearAllData();
       dataChanged.add(null);
       onDataChanged?.call();
     }
-
-    final firstActivation = !_active;
     _userId = userId;
     _helper.setSyncState('current_user_id', userId);
+    return changed;
+  }
+
+  /// Llama el AuthGate al detectar sesión verificada.
+  Future<void> start(String userId) async {
+    final wasInactive = !_active;
+    prepareUser(userId);
     _active = true;
     _retryIndex = 0;
 
     _watchConnectivity();
     _startPeriodic();
 
-    if (firstActivation) {
+    if (wasInactive) {
       notifyListeners();
     }
     await syncNow();

@@ -47,16 +47,20 @@ class SyncRunResult {
 /// Lógica de subida (dirty → servidor) y descarga (cursor → local).
 /// No decide cuándo corre: eso lo hace `SyncService`.
 class SyncEngine {
-  SyncEngine({required this.helper, required this.api});
-
-  static const int uploadBatch = 100;
-  static const int downloadBatch = 500;
+  SyncEngine({
+    required this.helper,
+    required this.api,
+    this.uploadBatch = 100,
+    this.downloadBatch = 500,
+  });
 
   /// Solapamiento al reiniciar el cursor (transacciones tardías del servidor).
   static const Duration cursorOverlap = Duration(minutes: 2);
 
   final DatabaseHelper helper;
   final RemoteSyncApi api;
+  final int uploadBatch;
+  final int downloadBatch;
 
   late final CategoryRepository _categories =
       SqliteCategoryRepository.withHelper(helper);
@@ -337,28 +341,39 @@ class SyncEngine {
     return applied;
   }
 
-  CategoryModel _parseCategory(Map<String, dynamic> row) =>
-      CategoryModel.fromMap({
-        ...row,
-        'title': row['title'] as String? ?? '',
-        'icon': row['icon'] as String? ?? '📂',
-        'color': row['color'] as String? ?? '#000000ff',
-        'is_default': row['is_default'] == true ? 1 : 0,
-        'dirty': 0,
-        'version': 0,
-        'sync_error': null,
-      });
+  CategoryModel _parseCategory(Map<String, dynamic> row) {
+    final now = DateTime.now().toUtc().toIso8601String();
+    return CategoryModel.fromMap({
+      ...row,
+      'title': row['title'] as String? ?? '',
+      'icon': row['icon'] as String? ?? '📂',
+      'color': row['color'] as String? ?? '#000000ff',
+      'is_default': row['is_default'] == true || row['is_default'] == 1
+          ? 1
+          : 0,
+      'created_at': row['created_at'] as String? ?? now,
+      'updated_at': row['updated_at'] as String? ?? now,
+      'dirty': 0,
+      'version': 0,
+      'sync_error': null,
+    });
+  }
 
-  LinkModel _parseLink(Map<String, dynamic> row) => LinkModel.fromMap({
-    ...row,
-    'title': row['title'] as String? ?? '',
-    'url': row['url'] as String? ?? '',
-    'category_id': row['category_id'] as String? ?? '',
-    'status': row['status'] as String? ?? 'public',
-    'dirty': 0,
-    'version': 0,
-    'sync_error': null,
-  });
+  LinkModel _parseLink(Map<String, dynamic> row) {
+    final now = DateTime.now().toUtc().toIso8601String();
+    return LinkModel.fromMap({
+      ...row,
+      'title': row['title'] as String? ?? '',
+      'url': row['url'] as String? ?? '',
+      'category_id': row['category_id'] as String? ?? '',
+      'status': row['status'] as String? ?? 'public',
+      'created_at': row['created_at'] as String? ?? now,
+      'updated_at': row['updated_at'] as String? ?? now,
+      'dirty': 0,
+      'version': 0,
+      'sync_error': null,
+    });
+  }
 
   // ─── CLASIFICACIÓN DE ERRORES ─────────────────────────────────────────────
 
