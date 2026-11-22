@@ -10,14 +10,14 @@ class LinkCard extends StatefulWidget {
   final String title;
   final String? description;
   final String url;
-  final int? categoryId;
+  final String? categoryId;
   final bool isLocked;
   final VoidCallback? onOpen;
   final VoidCallback? onCopy;
   final VoidCallback? onShare;
   final VoidCallback? onLock;
   final VoidCallback? onDelete;
-  final ValueChanged<int?>? onMoveTo;
+  final ValueChanged<String?>? onMoveTo;
   final VoidCallback? onEdit;
 
   const LinkCard({
@@ -41,14 +41,14 @@ class LinkCard extends StatefulWidget {
 }
 
 class _LinkCardState extends State<LinkCard> {
-  late CategoryModel category;
+  CategoryModel? category;
 
   void _loadCategory() {
     final CategoryProvider categoryProvider = Provider.of<CategoryProvider>(
       context,
       listen: false,
     );
-    category = categoryProvider.getById(widget.categoryId!)!;
+    category = categoryProvider.getById(widget.categoryId!);
   }
 
   @override
@@ -103,9 +103,9 @@ class _LinkCardState extends State<LinkCard> {
 
             // ── Description ──────────────────────────────
             Text(
-              widget.description!.isNotEmpty
-                  ? widget.description!
-                  : 'Sin descripción',
+                    (widget.description?.isNotEmpty ?? false)
+                    ? widget.description!
+                    : 'Sin descripción',
               style: textTheme.bodyMedium!.copyWith(color: Colors.grey),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
@@ -137,7 +137,8 @@ class _LinkCardState extends State<LinkCard> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                if (widget.isLocked) CategoryBadge(category: category),
+                if (widget.isLocked && category != null)
+                  CategoryBadge(category: category!),
               ],
             ),
           ],

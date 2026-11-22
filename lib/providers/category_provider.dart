@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import '../database/database.dart';
 
 class CategoryProvider extends ChangeNotifier {
-  final CategoryDao _dao = CategoryDao(DatabaseHelper());
+  final CategoryRepository _repo = SqliteCategoryRepository.withHelper(
+    DatabaseHelper(),
+  );
 
   List<CategoryModel> _categories = [];
   bool _isLoading = false;
@@ -12,14 +16,30 @@ class CategoryProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  // Excluye "Ninguna" para mostrar en la UI de gestión
-  List<CategoryModel> get manageable => _categories
-      .where((c) => c.id != DatabaseHelper.defaultCategoryId)
-      .toList();
+  /// Excluye la categoría por defecto para la UI de gestión.
+  List<CategoryModel> get manageable =>
+      _categories.where((c) => !c.isDefault).toList();
 
-  CategoryModel? getById(int categoryId) {
+  String? get defaultCategoryId => _repo.getDefaultCategoryId();
+
+  CategoryModel? get defaultCategory {
+    for (final c in _categories) {
+      if (c.isDefault) return c;
+    }
+    return _repo.getDefault();
+  }
+
+  String _requireUserId() {
+    final userId = AuthService.instance.currentUser?.id;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('No hay sesión activa para guardar datos.');
+    }
+    return userId;
+  }
+
+  CategoryModel? getById(String categoryId) {
     try {
-      return _dao.getById(categoryId);
+      return _repo.getById(categoryId);
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -33,7 +53,7 @@ class CategoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _categories = _dao.getAll();
+      _categories = _repo.getAll();
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -44,9 +64,12 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<void> add(CategoryModel category) async {
     try {
-      final id = _dao.insert(category);
-      _categories.add(category.copyWith(id: id));
-      notifyListeners();
+      final userId = _requireUserId();
+      final id = _repo.create(category.copyWith(userId: userId));
+      await SyncService.instance.requestSync();
+      await loadAll();
+      final idx = _categories.indexWhere((c) => c.id == id);
+      if (idx != -1) notifyListeners();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -55,10 +78,14 @@ class CategoryProvider extends ChangeNotifier {
 
   Future<void> update(CategoryModel category) async {
     try {
-      _dao.update(category);
+      _repo.update(category);
+      await SyncService.instance.requestSync();
       final index = _categories.indexWhere((c) => c.id == category.id);
       if (index != -1) {
-        _categories[index] = category;
+        _categories[index] = category.copyWith(
+          isPendingSync: true,
+          version: category.version + 1,
+        );
         notifyListeners();
       }
     } catch (e) {
@@ -67,25 +94,11 @@ class CategoryProvider extends ChangeNotifier {
     }
   }
 
-
-  Future<void> updateDefault(CategoryModel category) async {
-  try {
-    _dao.updateDefault(category.copyWith(id: DatabaseHelper.defaultCategoryId));
-    final index = _categories.indexWhere((c) => c.id == DatabaseHelper.defaultCategoryId);
-    if (index != -1) {
-      _categories[index] = category.copyWith(id: DatabaseHelper.defaultCategoryId);
-      notifyListeners();
-    }
-  } catch (e) {
-    _error = e.toString();
-    notifyListeners();
-  }
-}
-
-  /// Elimina la categoría y mueve sus links a "Ninguna"
-  Future<void> deleteAndReassign(int categoryId) async {
+  /// Elimina la categoría y mueve sus links a la por defecto
+  Future<void> deleteAndReassign(String categoryId) async {
     try {
-      _dao.deleteAndReassignLinks(categoryId);
+      _repo.deleteAndReassign(categoryId);
+      await SyncService.instance.requestSync();
       _categories.removeWhere((c) => c.id == categoryId);
       notifyListeners();
     } catch (e) {
@@ -95,9 +108,10 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   /// Elimina la categoría junto con todos sus links
-  Future<void> deleteWithLinks(int categoryId) async {
+  Future<void> deleteWithLinks(String categoryId) async {
     try {
-      _dao.deleteWithAllLinks(categoryId);
+      _repo.deleteWithLinks(categoryId);
+      await SyncService.instance.requestSync();
       _categories.removeWhere((c) => c.id == categoryId);
       notifyListeners();
     } catch (e) {

@@ -1,8 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import '../database/database.dart';
 
 class LinkProvider extends ChangeNotifier {
-  final LinkDao _dao = LinkDao(DatabaseHelper());
+  final LinkRepository _repo = SqliteLinkRepository.withHelper(
+    DatabaseHelper(),
+  );
 
   List<LinkModel> _links = [];
   bool _isLoading = false;
@@ -18,8 +22,17 @@ class LinkProvider extends ChangeNotifier {
   List<LinkModel> get privateLinks =>
       _links.where((l) => l.status == LinkStatus.private).toList();
 
-  List<LinkModel> byCategory(int categoryId) =>
-      _links.where((l) => l.categoryId == categoryId && l.status == LinkStatus.public).toList();
+  List<LinkModel> byCategory(String categoryId) => _links
+      .where((l) => l.categoryId == categoryId && l.status == LinkStatus.public)
+      .toList();
+
+  String _requireUserId() {
+    final userId = AuthService.instance.currentUser?.id;
+    if (userId == null || userId.isEmpty) {
+      throw StateError('No hay sesión activa para guardar datos.');
+    }
+    return userId;
+  }
 
   Future<void> loadAll() async {
     _isLoading = true;
@@ -27,7 +40,7 @@ class LinkProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _links = _dao.getAll();
+      _links = _repo.getAll();
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -38,9 +51,10 @@ class LinkProvider extends ChangeNotifier {
 
   Future<void> add(LinkModel link) async {
     try {
-      final id = _dao.insert(link);
-      _links.add(link.copyWith(id: id));
-      notifyListeners();
+      final userId = _requireUserId();
+      _repo.create(link.copyWith(userId: userId));
+      await SyncService.instance.requestSync();
+      await loadAll();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -49,10 +63,11 @@ class LinkProvider extends ChangeNotifier {
 
   Future<void> update(LinkModel link) async {
     try {
-      _dao.update(link);
+      _repo.update(link);
+      await SyncService.instance.requestSync();
       final index = _links.indexWhere((l) => l.id == link.id);
       if (index != -1) {
-        _links[index] = link;
+        _links[index] = link.copyWith(isPendingSync: true);
         notifyListeners();
       }
     } catch (e) {
@@ -68,9 +83,11 @@ class LinkProvider extends ChangeNotifier {
     await update(link.copyWith(status: newStatus));
   }
 
-  Future<void> delete(int? linkId) async {
+  Future<void> delete(String? linkId) async {
+    if (linkId == null) return;
     try {
-      _dao.delete(linkId!);
+      _repo.delete(linkId);
+      await SyncService.instance.requestSync();
       _links.removeWhere((l) => l.id == linkId);
       notifyListeners();
     } catch (e) {
@@ -81,7 +98,8 @@ class LinkProvider extends ChangeNotifier {
 
   Future<void> deleteVault() async {
     try {
-      _dao.deletePrivateLinks();
+      _repo.deletePrivateLinks();
+      await SyncService.instance.requestSync();
       _links.removeWhere((l) => l.status == LinkStatus.private);
       notifyListeners();
     } catch (e) {
@@ -90,25 +108,12 @@ class LinkProvider extends ChangeNotifier {
     }
   }
 
-  /// Llamar después de que CategoryProvider elimine una categoría con reasignación
-  void reassignToDefault(int categoryId) {
-    _links = _links.map((l) {
-      if (l.categoryId == categoryId) {
-        return l.copyWith(categoryId: DatabaseHelper.defaultCategoryId);
-      }
-      return l;
-    }).toList();
-    notifyListeners();
-  }
+  /// Refresca la lista tras un borrado/reasignación de categoría.
+  Future<void> reloadAfterCategoryChange() => loadAll();
 
-  /// Llamar después de que CategoryProvider elimine categoría con todos sus links
-  void removeByCategory(int categoryId) {
-    _links.removeWhere((l) => l.categoryId == categoryId);
-    notifyListeners();
-  }
-
-  ///Cambiar de categoria un link
-  Future<void> changeCategory(int? linkId, int? newCategoryId) async {
+  /// Cambiar de categoría un link
+  Future<void> changeCategory(String? linkId, String? newCategoryId) async {
+    if (linkId == null || newCategoryId == null) return;
     final index = _links.indexWhere((l) => l.id == linkId);
     if (index == -1) return;
 
@@ -116,4 +121,3 @@ class LinkProvider extends ChangeNotifier {
     await update(updated);
   }
 }
-

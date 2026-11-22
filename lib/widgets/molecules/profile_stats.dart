@@ -31,11 +31,14 @@ class ProfileStats extends StatelessWidget {
             child: Row(
               children: [
                 for (var i = 0; i < visible.length; i++) ...[
-                  if (linkProvider.byCategory(visible[i].id!).isNotEmpty)
+                  if (visible[i].id != null &&
+                      linkProvider.byCategory(visible[i].id!).isNotEmpty)
                     if (i > 0)
                       const SizedBox(width: 1.5), // separación entre segmentos
                   Expanded(
-                    flex: linkProvider.byCategory(visible[i].id!).length,
+                    flex: visible[i].id == null
+                        ? 1
+                        : linkProvider.byCategory(visible[i].id!).length,
                     child: Container(
                       decoration: BoxDecoration(
                         color: ColorParse().toColor(visible[i].color),
@@ -184,7 +187,9 @@ class _LegendItem extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          '${linkProvider.byCategory(category.id!).length}',
+          category.id == null
+              ? '0'
+              : '${linkProvider.byCategory(category.id!).length}',
           style: theme.textTheme.labelSmall
         ),
       ],

@@ -12,7 +12,7 @@ class CardMenu extends StatelessWidget {
   final VoidCallback? onShare;
   final VoidCallback? onLock;
   final VoidCallback? onDelete;
-  final ValueChanged<int?>? onMoveTo;
+  final ValueChanged<String?>? onMoveTo;
   final VoidCallback? onEdit;
 
   const CardMenu({

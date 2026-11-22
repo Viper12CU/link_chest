@@ -2,11 +2,9 @@ import 'package:custom_clippers/custom_clippers.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:link_chest/providers/onboarding_provider.dart';
-import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/widgets/molecules/category_items_group.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
 import 'package:link_chest/widgets/pages/profile_page.dart';
-import 'package:provider/provider.dart';
 
 class CategoryDrawer extends StatefulWidget {
   const CategoryDrawer({super.key});

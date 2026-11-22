@@ -20,7 +20,9 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
   @override
   Widget build(BuildContext context) {
     final LinkProvider linkProvider = Provider.of<LinkProvider>(context);
-    final List<LinkModel> links = linkProvider.byCategory(widget.category.id!);
+    final List<LinkModel> links = widget.category.id == null
+        ? const <LinkModel>[]
+        : linkProvider.byCategory(widget.category.id!);
     final bool isL = MediaQuery.of(context).size.width >= 600;
     final bool isXL = MediaQuery.of(context).size.width >= 1000;
 

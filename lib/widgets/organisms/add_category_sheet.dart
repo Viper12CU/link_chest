@@ -6,6 +6,7 @@ import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
 import 'package:provider/provider.dart';
+import 'package:toastify_flutter/toastify_flutter.dart';
 
 class AddCategorySheet extends StatefulWidget {
   final CategoryModel? categroyToEdit;
@@ -173,11 +174,16 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
     void handlerSubmit() async {
       final colorStr =
           '#${_selectedColor.toARGB32().toRadixString(16).padLeft(8, '0')}';
+      final now = DateTime.now().toUtc().toIso8601String();
       final category = CategoryModel(
         id: widget.categroyToEdit?.id,
+        userId: widget.categroyToEdit?.userId ?? '',
         title: _titleController.text,
         icon: _selectedEmoji,
         color: colorStr,
+        isDefault: widget.categroyToEdit?.isDefault ?? false,
+        createdAt: widget.categroyToEdit?.createdAt ?? now,
+        updatedAt: now,
       );
 
       if (widget.isEditing) {
@@ -187,6 +193,14 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       }
 
       debugPrint("Error ${categoryProvider.error}");
+      if (categoryProvider.error != null && context.mounted) {
+        ToastifyFlutter.error(
+          context,
+          message: categoryProvider.error!,
+          duration: 4,
+          style: ToastStyle.flat,
+        );
+      }
     }
 
     return Padding(

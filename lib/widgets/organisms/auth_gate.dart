@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import 'package:link_chest/widgets/pages/login_page.dart';
 import 'package:link_chest/widgets/pages/verify_email_page.dart';
 
@@ -36,6 +37,9 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
       _handlePendingChanged,
     );
 
+    // Sesión ya guardada al abrir la app.
+    _syncHooks(_user);
+
     if (_initializing) {
       unawaited(_refreshInitialVerification());
     }
@@ -54,7 +58,8 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
     if (state != AppLifecycleState.resumed) return;
 
     final user = _user;
-    if (user != null && !user.emailVerified) {
+    if (user != null && user.emailVerified) {
+      unawaited(SyncService.instance.syncNow());
       unawaited(_refreshVerification(silent: true));
       return;
     }
@@ -73,6 +78,18 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
       _user = user;
       if (user == null) _initializing = false;
     });
+    _syncHooks(user);
+  }
+
+  /// Ganchos mínimos de sync con la sesión existente (plan fase 4).
+  void _syncHooks(AppUser? user) {
+    final sync = SyncService.instance;
+    if (user != null && user.emailVerified) {
+      unawaited(sync.start(user.id));
+    } else if (user == null) {
+      // No borra datos locales: solo se vacían al entrar otro usuario.
+      sync.stop();
+    }
   }
 
   void _handlePendingChanged(AppUser? pending) {
@@ -103,6 +120,9 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
           _user = service.currentUser;
           _pendingUser = service.pendingUser;
         });
+      }
+      if (verified && _user != null) {
+        unawaited(SyncService.instance.start(_user!.id));
       }
       return verified;
     } on AuthFailure {
