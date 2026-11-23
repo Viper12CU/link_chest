@@ -6,6 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import app_links
+import connectivity_plus
 import dotlottie_flutter
 import emoji_picker_flutter
 import file_picker_darwin
@@ -20,6 +21,7 @@ import url_launcher_macos
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   AppLinksMacosPlugin.register(with: registry.registrar(forPlugin: "AppLinksMacosPlugin"))
+  ConnectivityPlusPlugin.register(with: registry.registrar(forPlugin: "ConnectivityPlusPlugin"))
   DotLottieFlutterPlugin.register(with: registry.registrar(forPlugin: "DotLottieFlutterPlugin"))
   EmojiPickerFlutterPlugin.register(with: registry.registrar(forPlugin: "EmojiPickerFlutterPlugin"))
   FilePickerPlugin.register(with: registry.registrar(forPlugin: "FilePickerPlugin"))
