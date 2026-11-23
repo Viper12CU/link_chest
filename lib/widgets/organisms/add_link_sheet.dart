@@ -3,6 +3,7 @@ import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/widgets/atoms/visibility_switch.dart';
+import 'package:link_chest/utils/shared/sync_ui_helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:toastify_flutter/toastify_flutter.dart';
 
@@ -80,7 +81,7 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
       orElse: () => widget.initialCategory,
     );
 
-    void handlerSubmit() async {
+    Future<bool> handlerSubmit() async {
       final now = DateTime.now().toUtc().toIso8601String();
       final newLink = LinkModel(
         id: widget.linkToEdit?.id,
@@ -100,14 +101,23 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
         await linkProvider.add(newLink);
       }
 
-      if (linkProvider.error != null && context.mounted) {
-        ToastifyFlutter.error(
-          context,
-          message: linkProvider.error!,
-          duration: 4,
-          style: ToastStyle.flat,
-        );
+      final String? error = linkProvider.error;
+      if (error != null) {
+        if (context.mounted) {
+          ToastifyFlutter.error(
+            context,
+            message: error,
+            duration: 4,
+            style: ToastStyle.flat,
+          );
+        }
+        return false;
       }
+
+      if (context.mounted) {
+        await showOfflineSaveToastIfNeeded(context);
+      }
+      return true;
     }
 
     return Padding(
@@ -223,9 +233,12 @@ class _AddLinkSheetState extends State<AddLinkSheet> {
                 const SizedBox(height: 20),
               // ── Save button ─────────────────────────────────
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    handlerSubmit();
+                onPressed: () async {
+                  if (!_formKey.currentState!.validate()) return;
+                  final ok = await handlerSubmit();
+                  // Solo cierra si el guardado local fue exitoso (pieza 8:
+                  // DefaultCategoryNotReadyException no debe cerrar el form).
+                  if (ok && context.mounted) {
                     Navigator.pop(context);
                   }
                 },

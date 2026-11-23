@@ -50,6 +50,7 @@ class LinkProvider extends ChangeNotifier {
   }
 
   Future<void> add(LinkModel link) async {
+    _error = null;
     try {
       final userId = _requireUserId();
       _repo.create(link.copyWith(userId: userId));
@@ -62,6 +63,7 @@ class LinkProvider extends ChangeNotifier {
   }
 
   Future<void> update(LinkModel link) async {
+    _error = null;
     try {
       _repo.update(link);
       await SyncService.instance.requestSync();

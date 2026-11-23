@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/services/sync/sync_service.dart';
+import 'package:link_chest/widgets/organisms/account_prep_screen.dart';
 import 'package:link_chest/widgets/pages/login_page.dart';
+import 'package:provider/provider.dart';
 import 'package:link_chest/widgets/pages/verify_email_page.dart';
 
 class AuthGate extends StatefulWidget {
@@ -158,6 +160,15 @@ class _AuthGateState extends State<AuthGate> with WidgetsBindingObserver {
       );
     }
 
-    return widget.home;
+    // Primera sincronización pendiente: pantalla de preparación de cuenta.
+    // Consumer reconstruye cuando SyncService notifica (initialSyncDone).
+    return Consumer<SyncService>(
+      builder: (context, sync, _) {
+        if (!sync.initialSyncDone) {
+          return const AccountPrepScreen();
+        }
+        return widget.home;
+      },
+    );
   }
 }

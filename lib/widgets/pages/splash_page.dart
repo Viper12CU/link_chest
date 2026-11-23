@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/auth_service.dart';
 import 'package:link_chest/services/sync/sync_service.dart';
+import 'package:link_chest/widgets/organisms/account_prep_screen.dart';
 import 'package:link_chest/widgets/organisms/auth_gate.dart';
 import 'package:link_chest/widgets/templates/splash_template.dart';
 import 'package:provider/provider.dart';
@@ -71,13 +72,13 @@ class _SplashPageState extends State<SplashPage> {
       await AuthService.instance.authStateChanges.first;
       if (!mounted) return;
 
-      // Sin categorías locales aún: AuthGate decide (login / espera de sync).
+      // Sin categorías locales aún: AuthGate decide (login / preparación).
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => AuthGate(
             home: initialCategory != null
                 ? CategoryPage(category: initialCategory)
-                : const _WaitingSyncHome(),
+                : const AccountPrepScreen(),
           ),
         ),
       );
@@ -108,40 +109,3 @@ class _SplashPageState extends State<SplashPage> {
   }
 }
 
-/// Placeholder hasta que la primera sincronización traiga datos.
-/// (La pantalla de preparación de cuenta queda fuera de este plan.)
-class _WaitingSyncHome extends StatelessWidget {
-  const _WaitingSyncHome();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(
-                'Preparando tus datos…',
-                style: theme.textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'La primera sincronización los cargará en este dispositivo.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

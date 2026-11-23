@@ -13,7 +13,7 @@ enum SyncPhase { idle, syncing, offline, error, needsLogin }
 /// Tipo de fila con error de sincronización.
 enum SyncErrorType { link, category }
 
-/// Fila local con `sync_error` para la lista de errores.
+/// Fila local con `sync_error` para la lista de errores de la interfaz.
 class SyncErrorItem {
   const SyncErrorItem({
     required this.id,
@@ -151,7 +151,45 @@ class SyncService extends ChangeNotifier {
       'SET sync_error = NULL, dirty = 1 WHERE sync_error IS NOT NULL;',
     );
     notifyListeners();
+    onDataChanged?.call();
     await requestSync();
+  }
+
+  /// Descarta todos los cambios con error: limpia `sync_error` y `dirty`
+  /// (decisión del usuario: la modificación local no se vuelve a subir).
+  void discardErrored() {
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableCategories} '
+      'SET sync_error = NULL, dirty = 0 WHERE sync_error IS NOT NULL;',
+    );
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableLinks} '
+      'SET sync_error = NULL, dirty = 0 WHERE sync_error IS NOT NULL;',
+    );
+    notifyListeners();
+    onDataChanged?.call();
+  }
+
+  /// Descarta un solo elemento con error (mismo efecto que [discardErrored]).
+  void discardError(SyncErrorItem item) {
+    final table = item.type == SyncErrorType.category
+        ? DatabaseHelper.tableCategories
+        : DatabaseHelper.tableLinks;
+    _helper.db.execute(
+      'UPDATE $table SET sync_error = NULL, dirty = 0 WHERE id = ?;',
+      [item.id],
+    );
+    notifyListeners();
+    onDataChanged?.call();
+  }
+
+  /// `true` si el dispositivo tiene conectividad (para avisos de la UI).
+  Future<bool> isOnline() async {
+    try {
+      return await _hasConnectivity();
+    } catch (_) {
+      return true;
+    }
   }
 
   // ─── CICLO DE VIDA ────────────────────────────────────────────────────────
@@ -238,7 +276,8 @@ class SyncService extends ChangeNotifier {
       final result = await engine.run();
       _retryIndex = 0;
       _setPhase(SyncPhase.idle);
-      if (result.downloadedTotal > 0) {
+      // Recarga Providers también tras subidas: limpia marcadores pending.
+      if (result.downloadedTotal > 0 || result.uploadedTotal > 0) {
         dataChanged.add(null);
         onDataChanged?.call();
       }

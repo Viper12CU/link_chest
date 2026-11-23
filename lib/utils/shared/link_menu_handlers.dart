@@ -5,6 +5,7 @@ import 'package:link_chest/database/models/link_model.dart';
 import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
 import 'package:link_chest/widgets/organisms/add_link_sheet.dart';
+import 'package:link_chest/utils/shared/sync_ui_helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:toastify_flutter/toastify_flutter.dart';
@@ -38,6 +39,9 @@ class LinkMenuHandlers {
 
   void handleLock(LinkModel link) async {
     await linkProvider.toggleStatus(link);
+    if (context.mounted) {
+      await showOfflineSaveToastIfNeeded(context);
+    }
   }
 
   void handleDelete(String? linkId) async {
@@ -49,7 +53,12 @@ class LinkMenuHandlers {
         ConfirmAction(
           label: 'Eliminar',
           style: ConfirmActionStyle.destructive,
-          onTap: () async => await linkProvider.delete(linkId),
+          onTap: () async {
+            await linkProvider.delete(linkId);
+            if (context.mounted) {
+              await showOfflineSaveToastIfNeeded(context);
+            }
+          },
         ),
       ],
     );
@@ -57,6 +66,9 @@ class LinkMenuHandlers {
 
   void handleMoveTo(String? link, String? newCategory) async {
     await linkProvider.changeCategory(link, newCategory);
+    if (context.mounted) {
+      await showOfflineSaveToastIfNeeded(context);
+    }
   }
 
   void handleEdit(LinkModel linkToEdit, CategoryModel initialCategory) {
