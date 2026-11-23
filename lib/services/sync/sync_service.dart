@@ -10,6 +10,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Fase de la sincronización para la interfaz (fuera de este plan en v1 UI).
 enum SyncPhase { idle, syncing, offline, error, needsLogin }
 
+/// Tipo de fila con error de sincronización.
+enum SyncErrorType { link, category }
+
+/// Fila local con `sync_error` para la lista de errores de la interfaz.
+class SyncErrorItem {
+  const SyncErrorItem({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.error,
+  });
+
+  final String id;
+  final SyncErrorType type;
+  final String title;
+
+  /// Motivo crudo guardado en `sync_error` (string del error del motor).
+  final String error;
+}
+
 /// Servicio de sincronización: disparadores, ejecución única, reintentos y
 /// estado. Los Providers solo lo usan vía `requestSync()` tras cada escritura.
 class SyncService extends ChangeNotifier {
@@ -85,6 +105,128 @@ class SyncService extends ChangeNotifier {
   }
 
   bool hasPendingChanges() => pendingCount > 0;
+
+  /// Elemento con `sync_error` para la lista de errores de la interfaz.
+  List<SyncErrorItem> get errorItems {
+    final items = <SyncErrorItem>[];
+    final cats = _helper.db.select(
+      'SELECT id, title, sync_error FROM ${DatabaseHelper.tableCategories} '
+      'WHERE sync_error IS NOT NULL ORDER BY updated_at, id;',
+    );
+    for (final row in cats) {
+      items.add(
+        SyncErrorItem(
+          id: row['id'] as String,
+          type: SyncErrorType.category,
+          title: row['title'] as String? ?? '',
+          error: row['sync_error'] as String? ?? '',
+        ),
+      );
+    }
+    final links = _helper.db.select(
+      'SELECT id, title, sync_error FROM ${DatabaseHelper.tableLinks} '
+      'WHERE sync_error IS NOT NULL ORDER BY updated_at, id;',
+    );
+    for (final row in links) {
+      items.add(
+        SyncErrorItem(
+          id: row['id'] as String,
+          type: SyncErrorType.link,
+          title: row['title'] as String? ?? '',
+          error: row['sync_error'] as String? ?? '',
+        ),
+      );
+    }
+    return items;
+  }
+
+  /// Limpia `sync_error`, deja `dirty = 1` y pide una sincronización.
+  Future<void> retryErrored() async {
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableCategories} '
+      'SET sync_error = NULL, dirty = 1 WHERE sync_error IS NOT NULL;',
+    );
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableLinks} '
+      'SET sync_error = NULL, dirty = 1 WHERE sync_error IS NOT NULL;',
+    );
+    notifyListeners();
+    onDataChanged?.call();
+    await requestSync();
+  }
+
+  /// Descarta todos los cambios con error: limpia `sync_error` y `dirty`
+  /// (decisión del usuario: la modificación local no se vuelve a subir).
+  void discardErrored() {
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableCategories} '
+      'SET sync_error = NULL, dirty = 0 WHERE sync_error IS NOT NULL;',
+    );
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableLinks} '
+      'SET sync_error = NULL, dirty = 0 WHERE sync_error IS NOT NULL;',
+    );
+    notifyListeners();
+    onDataChanged?.call();
+  }
+
+  /// Descarta un solo elemento con error (mismo efecto que [discardErrored]).
+  void discardError(SyncErrorItem item) {
+    final table = item.type == SyncErrorType.category
+        ? DatabaseHelper.tableCategories
+        : DatabaseHelper.tableLinks;
+    _helper.db.execute(
+      'UPDATE $table SET sync_error = NULL, dirty = 0 WHERE id = ?;',
+      [item.id],
+    );
+    notifyListeners();
+    onDataChanged?.call();
+  }
+
+  /// `true` si el dispositivo tiene conectividad (para avisos de la UI).
+  Future<bool> isOnline() async {
+    try {
+      return await _hasConnectivity();
+    } catch (_) {
+      return true;
+    }
+  }
+
+  // ─── TESTS ────────────────────────────────────────────────────────────────
+
+  /// Fija la fase sin pasar por el motor (solo para tests de UI).
+  @visibleForTesting
+  void debugSetPhase(SyncPhase next) => _setPhase(next);
+
+  /// Fija `isActive` sin arrancar timers/red (solo para tests de UI).
+  @visibleForTesting
+  void debugSetActive(bool value) {
+    _active = value;
+    notifyListeners();
+  }
+
+  /// Fija `isRunning` (solo para tests de UI).
+  @visibleForTesting
+  void debugSetRunning(bool value) {
+    _running = value;
+    notifyListeners();
+  }
+
+  /// Fija `isActive` y/o la fase sin pasar por el motor (solo para tests de UI).
+  /// Al desactivar, cancela timers para no dejar temporizadores pendientes.
+  @visibleForTesting
+  void debugSetState({bool? active, SyncPhase? phase}) {
+    if (active != null) {
+      _active = active;
+      if (!active) {
+        _debounce?.cancel();
+        _retry?.cancel();
+        _periodic?.cancel();
+      }
+    }
+    if (phase != null) _phase = phase;
+    notifyListeners();
+  }
 
   // ─── CICLO DE VIDA ────────────────────────────────────────────────────────
 
@@ -170,7 +312,8 @@ class SyncService extends ChangeNotifier {
       final result = await engine.run();
       _retryIndex = 0;
       _setPhase(SyncPhase.idle);
-      if (result.downloadedTotal > 0) {
+      // Recarga Providers también tras subidas: limpia marcadores pending.
+      if (result.downloadedTotal > 0 || result.uploadedTotal > 0) {
         dataChanged.add(null);
         onDataChanged?.call();
       }

@@ -3,7 +3,9 @@ import 'package:link_chest/database/database.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
+import 'package:link_chest/utils/shared/sync_ui_helpers.dart';
 import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
+import 'package:link_chest/widgets/atoms/sync_marker.dart';
 import 'package:link_chest/widgets/organisms/add_category_sheet.dart';
 import 'package:link_chest/widgets/organisms/auth_gate.dart';
 import 'package:link_chest/widgets/pages/category_page.dart';
@@ -44,6 +46,9 @@ class CategoryDrawerItem extends StatelessWidget {
             onTap: () async {
               await categoryProvider.deleteAndReassign(categoryId);
               await linkProvider.reloadAfterCategoryChange();
+              if (context.mounted) {
+                await showOfflineSaveToastIfNeeded(context);
+              }
             },
           ),
           ConfirmAction(
@@ -52,6 +57,9 @@ class CategoryDrawerItem extends StatelessWidget {
             onTap: () async {
               await categoryProvider.deleteWithLinks(categoryId);
               await linkProvider.reloadAfterCategoryChange();
+              if (context.mounted) {
+                await showOfflineSaveToastIfNeeded(context);
+              }
             },
           ),
         ],
@@ -100,11 +108,21 @@ class CategoryDrawerItem extends StatelessWidget {
                   children: [
                     Text(category.icon, style: TextStyle(fontSize: 22)),
                     Flexible(
-                      child: Text(
-                        category.title,
-                        style: theme.textTheme.headlineSmall,
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            category.title,
+                            style: theme.textTheme.headlineSmall,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                          if (category.isPendingSync || category.hasSyncError)
+                            SyncMarker(
+                              isPending: category.isPendingSync,
+                              hasError: category.hasSyncError,
+                            ),
+                        ],
                       ),
                     ),
                   ],

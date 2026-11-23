@@ -49,6 +49,8 @@ class _CategoryTemplateState extends State<CategoryTemplate> {
           url: link.url,
           categoryId: widget.category.id,
           isLocked: link.status.value == "private",
+          isPendingSync: link.isPendingSync,
+          hasSyncError: link.hasSyncError,
           onOpen: () => menuHandlers.handleOpen(link.url),
           onCopy: () => menuHandlers.handleCopy(link.url),
           onShare: () => menuHandlers.handleShare(link),

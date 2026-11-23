@@ -12,6 +12,9 @@ class CategoryModel {
   final int version;
   final String? syncError;
 
+  /// Fallo definitivo de sincronización (`sync_error` no nulo).
+  bool get hasSyncError => syncError != null;
+
   const CategoryModel({
     this.id,
     required this.userId,

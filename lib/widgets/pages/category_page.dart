@@ -12,6 +12,7 @@ import 'package:link_chest/widgets/atoms/custom_appbar.dart';
 import 'package:link_chest/widgets/atoms/smooth_fab.dart';
 import 'package:link_chest/widgets/organisms/add_link_sheet.dart';
 import 'package:link_chest/widgets/organisms/category_drawer.dart';
+import 'package:link_chest/widgets/molecules/sync_status_banner.dart';
 import 'package:link_chest/widgets/templates/category_template.dart';
 import 'package:provider/provider.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
@@ -130,6 +131,7 @@ class _CategoryPageState extends State<CategoryPage> {
         child: Column(
           children: [
             CustomAppbar(category: widget.category),
+            const SyncStatusBanner(),
             Expanded(child: CategoryTemplate(category: widget.category)),
           ],
         ),

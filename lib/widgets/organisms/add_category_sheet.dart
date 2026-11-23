@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/utils/shared/color_parse.dart';
+import 'package:link_chest/utils/shared/sync_ui_helpers.dart';
 import 'package:provider/provider.dart';
 import 'package:toastify_flutter/toastify_flutter.dart';
 
@@ -171,7 +172,7 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       });
     }
 
-    void handlerSubmit() async {
+    Future<bool> handlerSubmit() async {
       final colorStr =
           '#${_selectedColor.toARGB32().toRadixString(16).padLeft(8, '0')}';
       final now = DateTime.now().toUtc().toIso8601String();
@@ -193,14 +194,22 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
       }
 
       debugPrint("Error ${categoryProvider.error}");
-      if (categoryProvider.error != null && context.mounted) {
-        ToastifyFlutter.error(
-          context,
-          message: categoryProvider.error!,
-          duration: 4,
-          style: ToastStyle.flat,
-        );
+      if (categoryProvider.error != null) {
+        if (context.mounted) {
+          ToastifyFlutter.error(
+            context,
+            message: categoryProvider.error!,
+            duration: 4,
+            style: ToastStyle.flat,
+          );
+        }
+        return false;
       }
+
+      if (context.mounted) {
+        await showOfflineSaveToastIfNeeded(context);
+      }
+      return true;
     }
 
     return Padding(
@@ -412,9 +421,10 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
 
               // ── Create button ───────────────────────────────
               ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    handlerSubmit();
+                onPressed: () async {
+                  if (!_formKey.currentState!.validate()) return;
+                  final ok = await handlerSubmit();
+                  if (ok && context.mounted) {
                     Navigator.pop(context);
                   }
                 },

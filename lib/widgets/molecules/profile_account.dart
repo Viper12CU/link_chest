@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import 'package:link_chest/widgets/atoms/confirm_dialog.dart';
 import 'package:link_chest/widgets/atoms/profile_item.dart';
 import 'package:link_chest/widgets/molecules/change_password_sheet.dart';
@@ -41,6 +42,76 @@ class ProfileAccount extends StatelessWidget {
         ToastifyFlutter.error(context, message: e.message);
       }
     }
+  }
+
+  /// Cierre con confirmación extendida si hay cambios sin sincronizar.
+  void _confirmSignOut(BuildContext context) {
+    final SyncService sync = SyncService.instance;
+    final int pending = sync.pendingCount;
+
+    if (pending > 0) {
+      final String pendingLabel = pending == 1
+          ? '1 cambio'
+          : '$pending cambios';
+      ConfirmDialog.show(
+        context: context,
+        title: 'Cerrar sesión',
+        description:
+            'Tienes $pendingLabel sin sincronizar. Si cierras sesión ahora, '
+            'seguirán en este dispositivo y se sincronizarán cuando vuelvas '
+            'a entrar con la misma cuenta. Si entras con otra cuenta en este '
+            'dispositivo, estos cambios se perderán.',
+        actions: [
+          ConfirmAction(
+            label: 'Sincronizar y cerrar sesión',
+            style: ConfirmActionStyle.primary,
+            onTap: () async {
+              await sync.syncNow();
+              if (sync.phase == SyncPhase.offline && context.mounted) {
+                // Sin conexión: ofrecer cerrar de todos modos.
+                ConfirmDialog.show(
+                  context: context,
+                  title: 'Sin conexión',
+                  description:
+                      'No se pudo sincronizar ahora. Los cambios seguirán en '
+                      'este dispositivo. ¿Cerrar sesión de todos modos?',
+                  actions: [
+                    ConfirmAction(
+                      label: 'Cerrar sesión',
+                      style: ConfirmActionStyle.destructive,
+                      onTap: () => _handleSignOut(context),
+                    ),
+                  ],
+                );
+                return;
+              }
+              if (context.mounted) {
+                await _handleSignOut(context);
+              }
+            },
+          ),
+          ConfirmAction(
+            label: 'Cerrar sesión',
+            style: ConfirmActionStyle.destructive,
+            onTap: () => _handleSignOut(context),
+          ),
+        ],
+      );
+      return;
+    }
+
+    ConfirmDialog.show(
+      context: context,
+      title: 'Cerrar la sesión actual',
+      description: 'Se terminará con la sesión en este dispositivo.',
+      actions: [
+        ConfirmAction(
+          label: 'Cerrar sesión',
+          onTap: () => _handleSignOut(context),
+          style: ConfirmActionStyle.destructive,
+        ),
+      ],
+    );
   }
 
   @override
@@ -110,21 +181,7 @@ class ProfileAccount extends StatelessWidget {
                 title: 'Cerrar sesión',
                 textLabel: 'Termina la sesión en este dispositivo',
                 action: IconButton(
-                  onPressed: () {
-                    ConfirmDialog.show(
-                      context: context,
-                      title: 'Cerrar la sesión actual',
-                      description:
-                          'Se terminará con la sesión en este dispositivo.',
-                      actions: [
-                        ConfirmAction(
-                          label: 'Cerrar sesión',
-                          onTap: () => _handleSignOut(context),
-                          style: ConfirmActionStyle.destructive,
-                        ),
-                      ],
-                    );
-                  },
+                  onPressed: () => _confirmSignOut(context),
                   icon: const Icon(Icons.chevron_right_rounded),
                 ),
               ),

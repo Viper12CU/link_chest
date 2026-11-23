@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:link_chest/database/models/category_model.dart';
 import 'package:link_chest/providers/category_provider.dart';
 import 'package:link_chest/widgets/atoms/category_badge.dart';
+import 'package:link_chest/widgets/atoms/sync_marker.dart';
 import 'package:provider/provider.dart';
 
 import '../molecules/link_card_menu.dart';
@@ -19,6 +20,8 @@ class LinkCard extends StatefulWidget {
   final VoidCallback? onDelete;
   final ValueChanged<String?>? onMoveTo;
   final VoidCallback? onEdit;
+  final bool isPendingSync;
+  final bool hasSyncError;
 
   const LinkCard({
     super.key,
@@ -34,6 +37,8 @@ class LinkCard extends StatefulWidget {
     this.onDelete,
     this.onMoveTo,
     this.onEdit,
+    this.isPendingSync = false,
+    this.hasSyncError = false,
   });
 
   @override
@@ -100,6 +105,14 @@ class _LinkCardState extends State<LinkCard> {
             ),
 
             const SizedBox(height: 5),
+
+            if (widget.isPendingSync || widget.hasSyncError) ...[
+              SyncMarker(
+                isPending: widget.isPendingSync,
+                hasError: widget.hasSyncError,
+              ),
+              const SizedBox(height: 8),
+            ],
 
             // ── Description ──────────────────────────────
             Text(

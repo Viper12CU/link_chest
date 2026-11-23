@@ -63,6 +63,7 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   Future<void> add(CategoryModel category) async {
+    _error = null;
     try {
       final userId = _requireUserId();
       final id = _repo.create(category.copyWith(userId: userId));
@@ -77,6 +78,7 @@ class CategoryProvider extends ChangeNotifier {
   }
 
   Future<void> update(CategoryModel category) async {
+    _error = null;
     try {
       _repo.update(category);
       await SyncService.instance.requestSync();

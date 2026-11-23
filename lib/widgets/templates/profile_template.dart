@@ -5,6 +5,7 @@ import 'package:link_chest/widgets/molecules/profile_account.dart';
 import 'package:link_chest/widgets/molecules/profile_aplication.dart';
 import 'package:link_chest/widgets/molecules/profile_export_data.dart';
 import 'package:link_chest/widgets/molecules/profile_stats.dart';
+import 'package:link_chest/widgets/molecules/profile_sync.dart';
 import 'package:link_chest/widgets/molecules/web_access_banner.dart';
 import 'package:link_chest/widgets/organisms/profile_header.dart';
 
@@ -39,6 +40,7 @@ class _ProfileTemplateState extends State<ProfileTemplate> {
             email: user.email ?? 'usuario@email.com',
           ),
           const ProfileStats(),
+          const ProfileSync(),
           const WebAccessBanner(),
           const ActiveSessions(),
           ProfileAccount(

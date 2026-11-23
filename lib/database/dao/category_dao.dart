@@ -7,8 +7,7 @@ import '../models/category_model.dart';
 class DefaultCategoryNotReadyException implements Exception {
   @override
   String toString() =>
-      'La categoría por defecto aún no está disponible. '
-      'Espera a la primera sincronización.';
+      'Tu cuenta aún se está preparando. Inténtalo en unos segundos.';
 }
 
 class CategoryDao {
