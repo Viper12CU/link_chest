@@ -10,6 +10,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Fase de la sincronización para la interfaz (fuera de este plan en v1 UI).
 enum SyncPhase { idle, syncing, offline, error, needsLogin }
 
+/// Tipo de fila con error de sincronización.
+enum SyncErrorType { link, category }
+
+/// Fila local con `sync_error` para la lista de errores.
+class SyncErrorItem {
+  const SyncErrorItem({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.error,
+  });
+
+  final String id;
+  final SyncErrorType type;
+  final String title;
+
+  /// Motivo crudo guardado en `sync_error` (string del error del motor).
+  final String error;
+}
+
 /// Servicio de sincronización: disparadores, ejecución única, reintentos y
 /// estado. Los Providers solo lo usan vía `requestSync()` tras cada escritura.
 class SyncService extends ChangeNotifier {
@@ -85,6 +105,54 @@ class SyncService extends ChangeNotifier {
   }
 
   bool hasPendingChanges() => pendingCount > 0;
+
+  /// Elemento con `sync_error` para la lista de errores de la interfaz.
+  List<SyncErrorItem> get errorItems {
+    final items = <SyncErrorItem>[];
+    final cats = _helper.db.select(
+      'SELECT id, title, sync_error FROM ${DatabaseHelper.tableCategories} '
+      'WHERE sync_error IS NOT NULL ORDER BY updated_at, id;',
+    );
+    for (final row in cats) {
+      items.add(
+        SyncErrorItem(
+          id: row['id'] as String,
+          type: SyncErrorType.category,
+          title: row['title'] as String? ?? '',
+          error: row['sync_error'] as String? ?? '',
+        ),
+      );
+    }
+    final links = _helper.db.select(
+      'SELECT id, title, sync_error FROM ${DatabaseHelper.tableLinks} '
+      'WHERE sync_error IS NOT NULL ORDER BY updated_at, id;',
+    );
+    for (final row in links) {
+      items.add(
+        SyncErrorItem(
+          id: row['id'] as String,
+          type: SyncErrorType.link,
+          title: row['title'] as String? ?? '',
+          error: row['sync_error'] as String? ?? '',
+        ),
+      );
+    }
+    return items;
+  }
+
+  /// Limpia `sync_error`, deja `dirty = 1` y pide una sincronización.
+  Future<void> retryErrored() async {
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableCategories} '
+      'SET sync_error = NULL, dirty = 1 WHERE sync_error IS NOT NULL;',
+    );
+    _helper.db.execute(
+      'UPDATE ${DatabaseHelper.tableLinks} '
+      'SET sync_error = NULL, dirty = 1 WHERE sync_error IS NOT NULL;',
+    );
+    notifyListeners();
+    await requestSync();
+  }
 
   // ─── CICLO DE VIDA ────────────────────────────────────────────────────────
 

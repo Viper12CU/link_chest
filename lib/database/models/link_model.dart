@@ -28,6 +28,9 @@ class LinkModel {
   final int version;
   final String? syncError;
 
+  /// Fallo definitivo de sincronización (`sync_error` no nulo).
+  bool get hasSyncError => syncError != null;
+
   const LinkModel({
     this.id,
     required this.userId,

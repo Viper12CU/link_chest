@@ -10,6 +10,7 @@ import 'package:link_chest/providers/link_provider.dart';
 import 'package:link_chest/providers/onboarding_provider.dart';
 import 'package:link_chest/providers/version_provider.dart';
 import 'package:link_chest/services/auth_service.dart';
+import 'package:link_chest/services/sync/sync_service.dart';
 import 'package:link_chest/utils/theme.dart';
 import 'package:link_chest/widgets/pages/splash_page.dart';
 import 'package:provider/provider.dart';
@@ -55,6 +56,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LinkProvider()),
         ChangeNotifierProvider(create: (_) => VersionProvider()),
         ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+        ChangeNotifierProvider.value(value: SyncService.instance),
       ],
       child: FeatureDiscovery(child: const App()),
     ),
