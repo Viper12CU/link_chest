@@ -192,6 +192,42 @@ class SyncService extends ChangeNotifier {
     }
   }
 
+  // ─── TESTS ────────────────────────────────────────────────────────────────
+
+  /// Fija la fase sin pasar por el motor (solo para tests de UI).
+  @visibleForTesting
+  void debugSetPhase(SyncPhase next) => _setPhase(next);
+
+  /// Fija `isActive` sin arrancar timers/red (solo para tests de UI).
+  @visibleForTesting
+  void debugSetActive(bool value) {
+    _active = value;
+    notifyListeners();
+  }
+
+  /// Fija `isRunning` (solo para tests de UI).
+  @visibleForTesting
+  void debugSetRunning(bool value) {
+    _running = value;
+    notifyListeners();
+  }
+
+  /// Fija `isActive` y/o la fase sin pasar por el motor (solo para tests de UI).
+  /// Al desactivar, cancela timers para no dejar temporizadores pendientes.
+  @visibleForTesting
+  void debugSetState({bool? active, SyncPhase? phase}) {
+    if (active != null) {
+      _active = active;
+      if (!active) {
+        _debounce?.cancel();
+        _retry?.cancel();
+        _periodic?.cancel();
+      }
+    }
+    if (phase != null) _phase = phase;
+    notifyListeners();
+  }
+
   // ─── CICLO DE VIDA ────────────────────────────────────────────────────────
 
   /// Cambia de usuario en `sync_state`. Si es otro, vacía tablas y estado.

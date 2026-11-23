@@ -164,4 +164,120 @@ void main() {
       expect(pending, isNotEmpty);
     });
   });
+
+  group('SyncService.discardErrored', () {
+    test('limpia sync_error y deja dirty = 0 (no se vuelve a subir)', () {
+      final id = links.insert(link());
+      links.setSyncError(id, 'PostgrestException(code: 23503)');
+      categories.setSyncError(defaultCatId, 'PostgrestException(code: 42501)');
+
+      SyncService.instance.discardErrored();
+
+      expect(SyncService.instance.errorCount, 0);
+      expect(SyncService.instance.errorItems, isEmpty);
+
+      final linkRow = links.getById(id)!;
+      expect(linkRow.syncError, isNull);
+      expect(linkRow.isPendingSync, isFalse);
+
+      final catRow = categories.getById(defaultCatId)!;
+      expect(catRow.syncError, isNull);
+      expect(catRow.isPendingSync, isFalse);
+    });
+
+    test('no toca filas sin error ni pendientes limpios', () {
+      final okId = links.insert(link(url: 'https://ok.com'));
+      final pendingId = links.insert(link(url: 'https://pending.com'));
+      final badId = links.insert(link(url: 'https://bad.com'));
+      links.setSyncError(badId, 'boom');
+
+      SyncService.instance.discardErrored();
+
+      expect(links.getById(okId)!.syncError, isNull);
+      expect(links.getById(okId)!.isPendingSync, isTrue);
+      expect(links.getById(pendingId)!.isPendingSync, isTrue);
+      expect(links.getById(badId)!.syncError, isNull);
+      expect(links.getById(badId)!.isPendingSync, isFalse);
+    });
+
+    test('notifica a los listeners', () {
+      final id = links.insert(link());
+      links.setSyncError(id, 'err');
+
+      var notified = 0;
+      SyncService.instance.addListener(() => notified++);
+      SyncService.instance.discardErrored();
+
+      expect(notified, 1);
+      SyncService.instance.removeListener(() {});
+    });
+  });
+
+  group('SyncService.discardError (individual)', () {
+    test('descarta solo la fila indicada', () {
+      final a = links.insert(link(url: 'https://a.com'));
+      final b = links.insert(link(url: 'https://b.com'));
+      links.setSyncError(a, 'err-a');
+      links.setSyncError(b, 'err-b');
+      categories.setSyncError(defaultCatId, 'err-cat');
+
+      final itemA = SyncService.instance.errorItems.singleWhere(
+        (i) => i.id == a,
+      );
+      SyncService.instance.discardError(itemA);
+
+      expect(links.getById(a)!.syncError, isNull);
+      expect(links.getById(a)!.isPendingSync, isFalse);
+      expect(links.getById(b)!.syncError, 'err-b');
+      expect(categories.getById(defaultCatId)!.syncError, 'err-cat');
+      expect(SyncService.instance.errorCount, 2);
+    });
+
+    test('descarta una categoría individual', () {
+      final id = links.insert(link());
+      links.setSyncError(id, 'err-link');
+      categories.setSyncError(defaultCatId, 'err-cat');
+
+      final catItem = SyncService.instance.errorItems.singleWhere(
+        (i) => i.type == SyncErrorType.category,
+      );
+      SyncService.instance.discardError(catItem);
+
+      expect(categories.getById(defaultCatId)!.syncError, isNull);
+      expect(categories.getById(defaultCatId)!.isPendingSync, isFalse);
+      expect(links.getById(id)!.syncError, 'err-link');
+      expect(SyncService.instance.errorCount, 1);
+    });
+  });
+
+  group('initialSyncDone / lastSyncedAt', () {
+    test('leé valores de sync_state', () {
+      expect(SyncService.instance.initialSyncDone, isFalse);
+      expect(SyncService.instance.lastSyncedAt, isNull);
+
+      helper.setSyncState('initial_sync_done', '1');
+      helper.setSyncState('last_synced_at', '2026-01-01T00:00:00.000Z');
+
+      expect(SyncService.instance.initialSyncDone, isTrue);
+      expect(SyncService.instance.lastSyncedAt, '2026-01-01T00:00:00.000Z');
+    });
+  });
+
+  group('isOnline', () {
+    test('devuelve un bool sin lanzar (fallback online en tests)', () async {
+      final online = await SyncService.instance.isOnline();
+      expect(online, isA<bool>());
+      // Sin plugin de conectividad en tests: fallback true.
+      expect(online, isTrue);
+    });
+  });
+
+  group('DefaultCategoryNotReadyException (mensaje UI)', () {
+    test('mensaje en español para el usuario', () {
+      expect(
+        DefaultCategoryNotReadyException().toString(),
+        'Tu cuenta aún se está preparando. Inténtalo en unos segundos.',
+      );
+    });
+  });
 }

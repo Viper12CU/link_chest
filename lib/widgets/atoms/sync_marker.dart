@@ -20,6 +20,7 @@ class SyncMarker extends StatelessWidget {
 
     return Semantics(
       label: label,
+      excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
